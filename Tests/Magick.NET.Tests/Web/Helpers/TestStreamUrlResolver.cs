@@ -10,39 +10,37 @@
 // either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
-#if !NETCOREAPP1_1
+#if !NETCORE
 
 using System;
 using System.IO;
 using ImageMagick;
 using ImageMagick.Web;
 
-namespace Magick.NET.Tests
+namespace Magick.NET.Tests.Web
 {
     [ExcludeFromCodeCoverage]
     public sealed class TestStreamUrlResolver : IStreamUrlResolver
     {
-        private string _fileName;
-
         public TestStreamUrlResolver()
         {
-            _fileName = "foo.jpg";
+            ImageId = "foo.jpg";
         }
 
         public TestStreamUrlResolver(string fileName)
         {
-            _fileName = fileName;
+            ImageId = fileName;
         }
 
         public static bool Result { get; set; } = false;
 
-        public MagickFormat Format => MagickFormatInfo.Create(_fileName).Format;
+        public MagickFormat Format => MagickFormatInfo.Create(ImageId).Format;
 
-        public string ImageId => _fileName;
+        public string ImageId { get; }
 
-        public DateTime ModifiedTimeUtc => File.GetLastWriteTimeUtc(_fileName);
+        public DateTime ModifiedTimeUtc => File.GetLastWriteTimeUtc(ImageId);
 
-        public Stream OpenStream() => File.OpenRead(_fileName);
+        public Stream OpenStream() => File.OpenRead(ImageId);
 
         public bool Resolve(Uri url)
         {

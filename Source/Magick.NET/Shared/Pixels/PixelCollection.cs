@@ -13,6 +13,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 #if Q8
 using QuantumType = System.Byte;
@@ -66,10 +67,9 @@ namespace ImageMagick
             return GetAreaUnchecked(x, y, width, height);
         }
 
-        public QuantumType[] GetArea(MagickGeometry geometry)
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Geometry will not be null.")]
+        public virtual QuantumType[] GetArea(MagickGeometry geometry)
         {
-            Throw.IfNull(nameof(geometry), geometry);
-
             return GetArea(geometry.X, geometry.Y, geometry.Width, geometry.Height);
         }
 
@@ -109,10 +109,9 @@ namespace ImageMagick
                 SetPixelUnchecked(pixel.X, pixel.Y, pixel.Value);
         }
 
-        public void SetPixel(IEnumerable<Pixel> pixels)
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Pixels will not be null.")]
+        public virtual void SetPixel(IEnumerable<Pixel> pixels)
         {
-            Throw.IfNull(nameof(pixels), pixels);
-
             IEnumerator<Pixel> enumerator = pixels.GetEnumerator();
 
             while (enumerator.MoveNext())
@@ -157,6 +156,12 @@ namespace ImageMagick
             QuantumType[] castedValues = CastArray(values, Quantum.Convert);
             SetAreaUnchecked(x, y, width, height, castedValues);
         }
+
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Geometry will not be null.")]
+        public virtual void SetArea(MagickGeometry geometry, byte[] values)
+        {
+            SetArea(geometry.X, geometry.Y, geometry.Width, geometry.Height, values);
+        }
 #endif
 
         public virtual void SetArea(int x, int y, int width, int height, double[] values)
@@ -165,10 +170,22 @@ namespace ImageMagick
             SetAreaUnchecked(x, y, width, height, castedValues);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Geometry will not be null.")]
+        public virtual void SetArea(MagickGeometry geometry, double[] values)
+        {
+            SetArea(geometry.X, geometry.Y, geometry.Width, geometry.Height, values);
+        }
+
         public virtual void SetArea(int x, int y, int width, int height, int[] values)
         {
             QuantumType[] castedValues = CastArray(values, Quantum.Convert);
             SetAreaUnchecked(x, y, width, height, castedValues);
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Geometry will not be null.")]
+        public virtual void SetArea(MagickGeometry geometry, int[] values)
+        {
+            SetArea(geometry.X, geometry.Y, geometry.Width, geometry.Height, values);
         }
 
         public virtual void SetArea(int x, int y, int width, int height, QuantumType[] values)
@@ -176,15 +193,20 @@ namespace ImageMagick
             SetAreaUnchecked(x, y, width, height, values);
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Geometry will not be null.")]
+        public virtual void SetArea(MagickGeometry geometry, QuantumType[] values)
+        {
+            SetArea(geometry.X, geometry.Y, geometry.Width, geometry.Height, values);
+        }
+
         public QuantumType[] ToArray()
         {
             return GetValues();
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "4", Justification = "Mapping will not be null.")]
         public virtual byte[] ToByteArray(int x, int y, int width, int height, string mapping)
         {
-            Throw.IfNullOrEmpty(nameof(mapping), mapping);
-
             IntPtr nativeResult = IntPtr.Zero;
             byte[] result = null;
 
@@ -201,11 +223,21 @@ namespace ImageMagick
             return result;
         }
 
-        public byte[] ToByteArray(MagickGeometry geometry, string mapping)
+        public virtual byte[] ToByteArray(int x, int y, int width, int height, PixelMapping mapping)
         {
-            Throw.IfNull(nameof(geometry), geometry);
+            return ToByteArray(x, y, width, height, mapping.ToString());
+        }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Geometry will not be null.")]
+        public virtual byte[] ToByteArray(MagickGeometry geometry, string mapping)
+        {
             return ToByteArray(geometry.X, geometry.Y, geometry.Width, geometry.Height, mapping);
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Geometry will not be null.")]
+        public virtual byte[] ToByteArray(MagickGeometry geometry, PixelMapping mapping)
+        {
+            return ToByteArray(geometry.X, geometry.Y, geometry.Width, geometry.Height, mapping.ToString());
         }
 
         public byte[] ToByteArray(string mapping)
@@ -213,10 +245,14 @@ namespace ImageMagick
             return ToByteArray(0, 0, Image.Width, Image.Height, mapping);
         }
 
+        public byte[] ToByteArray(PixelMapping mapping)
+        {
+            return ToByteArray(0, 0, Image.Width, Image.Height, mapping.ToString());
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "4", Justification = "Mapping will not be null.")]
         public virtual ushort[] ToShortArray(int x, int y, int width, int height, string mapping)
         {
-            Throw.IfNullOrEmpty(nameof(mapping), mapping);
-
             IntPtr nativeResult = IntPtr.Zero;
             ushort[] result = null;
 
@@ -233,16 +269,30 @@ namespace ImageMagick
             return result;
         }
 
-        public ushort[] ToShortArray(MagickGeometry geometry, string mapping)
+        public virtual ushort[] ToShortArray(int x, int y, int width, int height, PixelMapping mapping)
         {
-            Throw.IfNull(nameof(geometry), geometry);
+            return ToShortArray(x, y, width, height, mapping.ToString());
+        }
 
+        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "Geometry will not be null.")]
+        public virtual ushort[] ToShortArray(MagickGeometry geometry, string mapping)
+        {
             return ToShortArray(geometry.X, geometry.Y, geometry.Width, geometry.Height, mapping);
+        }
+
+        public virtual ushort[] ToShortArray(MagickGeometry geometry, PixelMapping mapping)
+        {
+            return ToShortArray(geometry, mapping.ToString());
         }
 
         public ushort[] ToShortArray(string mapping)
         {
             return ToShortArray(0, 0, Image.Width, Image.Height, mapping);
+        }
+
+        public ushort[] ToShortArray(PixelMapping mapping)
+        {
+            return ToShortArray(0, 0, Image.Width, Image.Height, mapping.ToString());
         }
 
         internal QuantumType[] GetAreaUnchecked(int x, int y, int width, int height)

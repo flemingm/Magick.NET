@@ -13,7 +13,7 @@
 using ImageMagick;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Magick.NET.Tests
+namespace Magick.NET.Tests.Profiles
 {
     [TestClass]
     public class ColorProfileTests
@@ -50,20 +50,6 @@ namespace Magick.NET.Tests
 
                 image.AddProfile(new ImageProfile("icm", ColorProfile.SRGB.ToByteArray()));
                 TestProfile(image.GetColorProfile(), "icm");
-            }
-        }
-
-        [TestMethod]
-        public void Test_Info()
-        {
-            using (IMagickImage image = new MagickImage(Files.MagickNETIconPNG))
-            {
-                image.AddProfile(ColorProfile.USWebCoatedSWOP);
-
-                Assert.AreEqual("U.S. Web Coated (SWOP) v2", image.GetAttribute("icc:description"));
-                Assert.AreEqual("U.S. Web Coated (SWOP) v2", image.GetAttribute("icc:manufacturer"));
-                Assert.AreEqual("U.S. Web Coated (SWOP) v2", image.GetAttribute("icc:model"));
-                Assert.AreEqual("Copyright 2000 Adobe Systems, Inc.", image.GetAttribute("icc:copyright"));
             }
         }
 

@@ -191,7 +191,7 @@ namespace Magick.NET.Tests
         {
             get
             {
-                return _Root + "Images/Viceland.png";
+                return _Root + "Images/viceland.png";
             }
         }
 
@@ -299,6 +299,14 @@ namespace Magick.NET.Tests
                 }
             }
 
+            public static string PdfExamplePasswordOriginalPDF
+            {
+                get
+                {
+                    return _Root + @"Images/Coders/pdf-example-password.original.pdf";
+                }
+            }
+
             public static string PlayerPSD
             {
                 get
@@ -393,6 +401,14 @@ namespace Magick.NET.Tests
                 get
                 {
                     return _Root + @"Framework/Script/Invalid.msl";
+                }
+            }
+
+            public static string PixelStorage
+            {
+                get
+                {
+                    return _Root + @"Shared/Script/PixelStorage.msl";
                 }
             }
 

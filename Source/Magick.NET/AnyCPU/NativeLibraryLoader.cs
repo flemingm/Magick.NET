@@ -10,7 +10,7 @@
 // either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
-#if PLATFORM_AnyCPU && !NETSTANDARD1_3
+#if PLATFORM_AnyCPU && !NETSTANDARD
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
@@ -93,7 +93,7 @@ namespace ImageMagick
 
             WriteAssembly(tempFile);
 
-            NativeMethods.SetDllDirectory(cacheDirectory);
+            MagickNET.SetNativeLibraryDirectory(cacheDirectory);
 
             MagickNET.Initialize(ConfigurationFiles.Default, cacheDirectory);
         }
@@ -128,13 +128,6 @@ namespace ImageMagick
                     }
                 }
             }
-        }
-
-        private static class NativeMethods
-        {
-            [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool SetDllDirectory(string lpPathName);
         }
     }
 }

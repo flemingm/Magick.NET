@@ -10,6 +10,8 @@
 // either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
+using System.Globalization;
+
 namespace ImageMagick
 {
     /// <summary>
@@ -93,10 +95,20 @@ namespace ImageMagick
         {
             Throw.IfNullOrEmpty(nameof(value), value);
 
-            using (NativeMagickGeometry instance = new NativeMagickGeometry())
+            using (var instance = new NativeMagickGeometry())
             {
-                GeometryFlags flags = instance.Initialize(value);
-                Initialize(instance, flags);
+                var flags = instance.Initialize(value);
+
+                if (!EnumHelper.HasFlag(flags, GeometryFlags.AspectRatio))
+                {
+                    Initialize(instance, flags);
+                    return;
+                }
+
+                AspectRatio = true;
+                var ratio = value.Split(':');
+                Width = int.Parse(ratio[0], CultureInfo.InvariantCulture);
+                Height = int.Parse(ratio[1], CultureInfo.InvariantCulture);
             }
         }
 
@@ -190,6 +202,12 @@ namespace ImageMagick
         /// Gets or sets the Y offset from origin.
         /// </summary>
         public int Y
+        {
+            get;
+            set;
+        }
+
+        internal bool AspectRatio
         {
             get;
             set;
@@ -327,6 +345,7 @@ namespace ImageMagick
                 Height == other.Height &&
                 X == other.X &&
                 Y == other.Y &&
+                AspectRatio == other.AspectRatio &&
                 IsPercentage == other.IsPercentage &&
                 IgnoreAspectRatio == other.IgnoreAspectRatio &&
                 Less == other.Less &&
@@ -346,6 +365,7 @@ namespace ImageMagick
                 Height.GetHashCode() ^
                 X.GetHashCode() ^
                 Y.GetHashCode() ^
+                AspectRatio.GetHashCode() ^
                 IsPercentage.GetHashCode() ^
                 IgnoreAspectRatio.GetHashCode() ^
                 Less.GetHashCode() ^
@@ -370,6 +390,9 @@ namespace ImageMagick
         public override string ToString()
         {
             string result = null;
+
+            if (AspectRatio)
+                return Width + ":" + Height;
 
             if (Width > 0)
                 result += Width;
@@ -418,6 +441,7 @@ namespace ImageMagick
 
             return new MagickGeometry()
             {
+                AspectRatio = value.AspectRatio,
                 FillArea = value.FillArea,
                 Greater = value.Greater,
                 Height = value.Height,

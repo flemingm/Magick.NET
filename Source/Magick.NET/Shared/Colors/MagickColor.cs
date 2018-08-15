@@ -507,6 +507,7 @@ namespace ImageMagick
                 Blue = B,
                 Alpha = A,
                 Black = K,
+                IsCMYK = _isCmyk,
             };
             return instance;
         }

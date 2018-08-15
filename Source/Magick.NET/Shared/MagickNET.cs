@@ -58,7 +58,18 @@ namespace ImageMagick
         }
 
         /// <summary>
-        /// Gets the features reported by ImageMagick.
+        /// Gets the ImageMagick delegate libraries.
+        /// </summary>
+        public static string Delegates
+        {
+            get
+            {
+                return NativeMagickNET.Delegates;
+            }
+        }
+
+        /// <summary>
+        /// Gets the ImageMagick features.
         /// </summary>
         public static string Features
         {
@@ -202,6 +213,14 @@ namespace ImageMagick
         }
 
         /// <summary>
+        /// Resets the pseudo-random number generator secret key.
+        /// </summary>
+        public static void ResetRandomSeed()
+        {
+            NativeMagickNET.SetRandomSeed(-1);
+        }
+
+        /// <summary>
         /// Set the events that will be written to the log. The log will be written to the Log event
         /// and the debug window in VisualStudio. To change the log settings you must use a custom
         /// log.xml file.
@@ -281,13 +300,10 @@ namespace ImageMagick
         {
             string eventFlags = null;
 
-            if (EnumHelper.HasFlag(_logEvents, LogEvents.All))
-            {
-                if (EnumHelper.HasFlag(_logEvents, LogEvents.Trace))
-                    eventFlags = "All,Trace";
-                else
-                    eventFlags = "All";
-            }
+            if (EnumHelper.HasFlag(_logEvents, LogEvents.Detailed))
+                eventFlags = "All";
+            else if (EnumHelper.HasFlag(_logEvents, LogEvents.All))
+                eventFlags = "All,Trace";
             else
                 eventFlags = EnumHelper.ConvertFlags(_logEvents);
 

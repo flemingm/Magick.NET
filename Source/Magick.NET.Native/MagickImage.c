@@ -545,24 +545,6 @@ MAGICK_NET_EXPORT void MagickImage_Quality_Set(Image *instance, const size_t val
   instance->quality = value;
 }
 
-MAGICK_NET_EXPORT Image *MagickImage_ReadMask_Get(const Image *instance, ExceptionInfo **exception)
-{
-  Image
-    *image;
-
-  MAGICK_NET_GET_EXCEPTION;
-  image = GetImageMask(instance, ReadPixelMask, exceptionInfo);
-  MAGICK_NET_SET_EXCEPTION;
-  return image;
-}
-
-MAGICK_NET_EXPORT void MagickImage_ReadMask_Set(Image *instance, const Image *mask, ExceptionInfo **exception)
-{
-  MAGICK_NET_GET_EXCEPTION;
-  SetImageMask(instance, ReadPixelMask, mask, exceptionInfo);
-  MAGICK_NET_SET_EXCEPTION;
-}
-
 MAGICK_NET_EXPORT size_t MagickImage_ResolutionUnits_Get(const Image *instance)
 {
   return (size_t)instance->units;
@@ -641,24 +623,6 @@ MAGICK_NET_EXPORT size_t MagickImage_Width_Get(const Image *instance)
   return instance->columns;
 }
 
-MAGICK_NET_EXPORT Image *MagickImage_WriteMask_Get(const Image *instance, ExceptionInfo **exception)
-{
-  Image
-    *image;
-
-  MAGICK_NET_GET_EXCEPTION;
-  image = GetImageMask(instance, WritePixelMask, exceptionInfo);
-  MAGICK_NET_SET_EXCEPTION;
-  return image;
-}
-
-MAGICK_NET_EXPORT void MagickImage_WriteMask_Set(Image *instance, const Image *mask, ExceptionInfo **exception)
-{
-  MAGICK_NET_GET_EXCEPTION;
-  SetImageMask(instance, WritePixelMask, mask, exceptionInfo);
-  MAGICK_NET_SET_EXCEPTION;
-}
-
 MAGICK_NET_EXPORT Image *MagickImage_AdaptiveBlur(const Image *instance, const double radius, const double sigma, ExceptionInfo **exception)
 {
   Image
@@ -670,13 +634,19 @@ MAGICK_NET_EXPORT Image *MagickImage_AdaptiveBlur(const Image *instance, const d
   return image;
 }
 
-MAGICK_NET_EXPORT Image *MagickImage_AdaptiveResize(const Image *instance, const size_t width, const size_t height, ExceptionInfo **exception)
+MAGICK_NET_EXPORT Image *MagickImage_AdaptiveResize(const Image *instance, const char *geometry, ExceptionInfo **exception)
 {
   Image
     *image;
 
+  RectangleInfo
+    rectangle;
+
+  SetGeometry(instance, &rectangle);
+  ParseMetaGeometry(geometry, &rectangle.x, &rectangle.y, &rectangle.width, &rectangle.height);
+
   MAGICK_NET_GET_EXCEPTION;
-  image = AdaptiveResizeImage(instance, width, height, exceptionInfo);
+  image = AdaptiveResizeImage(instance, rectangle.width, rectangle.height, exceptionInfo);
   MAGICK_NET_SET_EXCEPTION;
   return image;
 }
@@ -756,7 +726,7 @@ MAGICK_NET_EXPORT void MagickImage_Annotate(Image *instance, const DrawInfo *set
   drawInfo->text = text;
   drawInfo->geometry = DestroyString(drawInfo->geometry);
   drawInfo->geometry = boundingArea;
-  drawInfo->gravity = (GradientType)gravity;
+  drawInfo->gravity = (GravityType)gravity;
 
   if (angle != 0.0)
     SetTransformRotation(drawInfo, angle);
@@ -1112,6 +1082,27 @@ MAGICK_NET_EXPORT Image *MagickImage_Crop(const Image *instance, const Rectangle
   return image;
 }
 
+MAGICK_NET_EXPORT Image *MagickImage_CropAspectRatio(Image *instance, const char *geometry, const GravityType gravity, ExceptionInfo **exception)
+{
+  Image
+    *image;
+
+  GravityType
+    original_gravity;
+
+  MAGICK_NET_GET_EXCEPTION;
+  original_gravity = instance->gravity;
+  instance->gravity = gravity;
+  image = CropImageToTiles(instance, geometry, exceptionInfo);
+  RemoveFrames(image);
+  if (image != (Image *)NULL)
+    image->gravity = original_gravity;
+  else
+    instance->gravity = original_gravity;
+  MAGICK_NET_SET_EXCEPTION;
+  return image;
+}
+
 MAGICK_NET_EXPORT Image *MagickImage_CropToTiles(const Image *instance, const char *geometry, ExceptionInfo **exception)
 {
   Image
@@ -1386,7 +1377,7 @@ MAGICK_NET_EXPORT Image *MagickImage_Frame(const Image *instance, const Rectangl
     info;
 
   Image
-    *result;
+    *image;
 
   info.x = geometry->width;
   info.y = geometry->height;
@@ -1396,9 +1387,9 @@ MAGICK_NET_EXPORT Image *MagickImage_Frame(const Image *instance, const Rectangl
   info.inner_bevel = geometry->y;
 
   MAGICK_NET_GET_EXCEPTION;
-  result = FrameImage(instance, &info, instance->compose, exceptionInfo);
+  image = FrameImage(instance, &info, instance->compose, exceptionInfo);
   MAGICK_NET_SET_EXCEPTION;
-  return result;
+  return image;
 }
 
 MAGICK_NET_EXPORT Image *MagickImage_Fx(Image *instance, const char *expression, const size_t channels, ExceptionInfo **exception)
@@ -1499,6 +1490,32 @@ MAGICK_NET_EXPORT const char *MagickImage_GetNextProfileName(const Image *instan
 MAGICK_NET_EXPORT const StringInfo *MagickImage_GetProfile(const Image *instance, const char *name)
 {
   return GetImageProfile(instance, name);
+}
+
+MAGICK_NET_EXPORT Image *MagickImage_GetReadMask(const Image *instance, ExceptionInfo **exception)
+{
+  Image
+    *image;
+
+  MAGICK_NET_GET_EXCEPTION;
+  if ((instance->channels & ReadMaskChannel) == 0)
+    return (Image *) NULL;
+  image = GetImageMask(instance, ReadPixelMask, exceptionInfo);
+  MAGICK_NET_SET_EXCEPTION;
+  return image;
+}
+
+MAGICK_NET_EXPORT Image *MagickImage_GetWriteMask(const Image *instance, ExceptionInfo **exception)
+{
+  Image
+    *image;
+
+  MAGICK_NET_GET_EXCEPTION;
+  if ((instance->channels & WriteMaskChannel) == 0)
+    return (Image *)NULL;
+  image = GetImageMask(instance, WritePixelMask, exceptionInfo);
+  MAGICK_NET_SET_EXCEPTION;
+  return image;
 }
 
 MAGICK_NET_EXPORT void MagickImage_Grayscale(Image *instance, const size_t method, ExceptionInfo **exception)
@@ -1603,33 +1620,29 @@ MAGICK_NET_EXPORT void MagickImage_LinearStretch(Image *instance, const double b
 MAGICK_NET_EXPORT Image *MagickImage_LiquidRescale(const Image *instance, const char *geometry, ExceptionInfo **exception)
 {
   Image
-    *result;
+    *image;
 
-  size_t
-    height,
-    width;
+  RectangleInfo
+    rectangle;
 
-  ssize_t
-    x = 0,
-    y = 0;
-
-  width = instance->columns;
-  height = instance->rows;
-  ParseMetaGeometry(geometry, &x, &y, &width, &height);
+  SetGeometry(instance, &rectangle);
+  ParseMetaGeometry(geometry, &rectangle.x, &rectangle.y, &rectangle.width, &rectangle.height);
 
   MAGICK_NET_GET_EXCEPTION;
-  result = LiquidRescaleImage(instance, width, height, (double)x, (double)y, exceptionInfo);
+  image = LiquidRescaleImage(instance, rectangle.width, rectangle.height, (double)rectangle.x, (double)rectangle.y, exceptionInfo);
   MAGICK_NET_SET_EXCEPTION;
-  return result;
+  return image;
 }
 
-MAGICK_NET_EXPORT Image *MagickImage_LocalContrast(const Image *instance, const double radius, const double strength, ExceptionInfo **exception)
+MAGICK_NET_EXPORT Image *MagickImage_LocalContrast(Image *instance, const double radius, const double strength, const size_t channels, ExceptionInfo **exception)
 {
   Image
     *image;
 
   MAGICK_NET_GET_EXCEPTION;
+  SetChannelMask(instance, channels);
   image = LocalContrastImage(instance, radius, strength, exceptionInfo);
+  RestoreChannelMask(instance);
   MAGICK_NET_SET_EXCEPTION;
   return image;
 }
@@ -2146,6 +2159,20 @@ MAGICK_NET_EXPORT void MagickImage_SetNext(Image *image, Image *next)
 MAGICK_NET_EXPORT void MagickImage_SetProgressDelegate(Image *instance, const MagickProgressMonitor method)
 {
   instance->progress_monitor = method;
+}
+
+MAGICK_NET_EXPORT void MagickImage_SetReadMask(Image *instance, const Image *mask, ExceptionInfo **exception)
+{
+  MAGICK_NET_GET_EXCEPTION;
+  SetImageMask(instance, ReadPixelMask, mask, exceptionInfo);
+  MAGICK_NET_SET_EXCEPTION;
+}
+
+MAGICK_NET_EXPORT void MagickImage_SetWriteMask(Image *instance, const Image *mask, ExceptionInfo **exception)
+{
+  MAGICK_NET_GET_EXCEPTION;
+  SetImageMask(instance, WritePixelMask, mask, exceptionInfo);
+  MAGICK_NET_SET_EXCEPTION;
 }
 
 MAGICK_NET_EXPORT Image *MagickImage_Shade(Image *instance, const double azimuth, const double elevation, const MagickBooleanType colorShading, const size_t channels, ExceptionInfo **exception)

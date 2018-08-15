@@ -58,6 +58,8 @@ function CheckStrongNames($builds)
   {
     CheckStrongName $build "net20"
     CheckStrongName $build "net40"
+    CheckStrongName $build "netstandard13"
+    CheckStrongName $build "netstandard20"
   }
 }
 
@@ -102,6 +104,7 @@ function CreateNuGetPackages($id, $version, $build)
   AddLibraryToPackage $xml $build "net20"
   AddLibraryToPackage $xml $build "net40"
   AddLibraryToPackage $xml $build "netstandard13"
+  AddLibraryToPackage $xml $build "netstandard20"
 
   if ($build.Platform -ne "AnyCPU")
   {
@@ -117,7 +120,8 @@ function CreateNuGetPackages($id, $version, $build)
 
   if ($build.Platform -ne "x86")
   {
-    AddFileElement $xml "..\..\ImageMagick\$($build.Quantum)\lib\Release\CrossPlatform\ubuntu.16.04\Magick.NET-$($build.Quantum)-x64.Native.dll.so" "runtimes\linux-x64\native"
+    AddFileElement $xml "..\..\ImageMagick\$($build.Quantum)\lib\Release\CrossPlatform\linux\Magick.NET-$($build.Quantum)-x64.Native.dll.so" "runtimes\linux-x64\native"
+    AddFileElement $xml "..\..\ImageMagick\$($build.Quantum)\lib\Release\CrossPlatform\osx\Magick.NET-$($build.Quantum)-x64.Native.dll.dylib" "runtimes\osx-x64\native"
   }
 
   AddDocumentsToPackage $xml

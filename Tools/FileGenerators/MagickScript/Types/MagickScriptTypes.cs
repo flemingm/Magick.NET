@@ -22,12 +22,12 @@ namespace FileGenerator.MagickScript
     {
         private static readonly string[] _UnsupportedMethods = new string[]
         {
-            "Add", "AddRange", "Clear", "Compare", "Dispose", "Draw", "Insert", "Ping", "Read", "RemoveAt", "Write"
+            "Add", "AddRange", "Clear", "Compare", "Contains", "Dispose", "Equals", "Draw", "Insert", "Ping", "Read","ReadPixels", "Remove", "RemoveAt", "Write"
         };
 
         private static readonly string[] _IgnoredReturnTypes = new string[]
         {
-            "MagickErrorInfo"
+            "MagickErrorInfo", "Boolean"
         };
 
         private static bool CanIgnoreResult(MethodInfo method)
@@ -118,6 +118,8 @@ namespace FileGenerator.MagickScript
                     return "double";
                 case "Int32":
                     return "int";
+                case "Int64":
+                    return "long";
                 case "MagickColor":
                     return "color";
                 case "MagickGeometry":
@@ -146,6 +148,7 @@ namespace FileGenerator.MagickScript
                 case "ImageProfile":
                 case "IReadDefines":
                 case "IMagickImage":
+                case "MagickReadSettings":
                 case "MagickSettings":
                 case "MontageSettings":
                 case "MorphologySettings":
@@ -184,6 +187,7 @@ namespace FileGenerator.MagickScript
                 case "Drawable":
                 case "IDefines":
                 case "IReadDefines":
+                case "MagickReadSettings":
                 case "PathArc":
                 case "PrimaryInfo":
                     return char.ToLowerInvariant(typeName[0]) + typeName.Substring(1);
@@ -296,6 +300,7 @@ namespace FileGenerator.MagickScript
                 case "ImageProfile":
                 case "IMagickImage":
                 case "Int32":
+                case "Int64":
                 case "IPath":
                 case "IReadDefines":
                 case "MagickColor":

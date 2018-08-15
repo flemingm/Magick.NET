@@ -36,6 +36,10 @@ namespace Magick.NET.Tests
             Assert.AreEqual(100000U, ResourceLimits.Height);
             ResourceLimits.Height = 10000000U;
 
+            ResourceLimits.ListLength = 32U;
+            Assert.AreEqual(32U, ResourceLimits.ListLength);
+            ResourceLimits.ListLength = ulong.MaxValue;
+
             ResourceLimits.Memory = 10000000U;
             Assert.AreEqual(10000000U, ResourceLimits.Memory);
             ResourceLimits.Memory = 8585838592U;
@@ -48,8 +52,8 @@ namespace Magick.NET.Tests
             Assert.AreEqual(1U, ResourceLimits.Throttle);
             ResourceLimits.Throttle = 0U;
 
-            ResourceLimits.Width = 10000U;
-            Assert.AreEqual(10000U, ResourceLimits.Width);
+            ResourceLimits.Width = 200000U;
+            Assert.AreEqual(200000U, ResourceLimits.Width);
             ResourceLimits.Width = 10000000U;
         }
     }

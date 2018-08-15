@@ -137,9 +137,8 @@ typedef struct _CacheInfo
   PixelTrait
     alpha_trait;
 
-  MagickBooleanType
-    read_mask,
-    write_mask;
+  ChannelType
+    channels;
 
   size_t
     columns,
@@ -224,6 +223,9 @@ typedef struct _CacheInfo
 
   MagickCLCacheInfo
     opencl;
+
+  MagickBooleanType
+    composite_mask;
 } CacheInfo;
 
 extern MagickPrivate Cache
@@ -245,7 +247,6 @@ extern MagickPrivate const Quantum
   *GetVirtualPixelsNexus(const Cache,NexusInfo *magick_restrict);
 
 extern MagickPrivate const void
-  *AcquirePixelCachePixels(const Image *,MagickSizeType *,ExceptionInfo *),
   *GetVirtualMetacontentFromNexus(const Cache,NexusInfo *magick_restrict);
 
 extern MagickPrivate MagickBooleanType
@@ -280,6 +281,7 @@ extern MagickPrivate void
   ClonePixelCacheMethods(Cache,const Cache),
   GetPixelCacheTileSize(const Image *,size_t *,size_t *),
   GetPixelCacheMethods(CacheMethods *),
+  ResetCacheAnonymousMemory(void),
   ResetPixelCacheEpoch(void),
   ResetPixelCacheChannels(Image *),
   SetPixelCacheMethods(Cache,CacheMethods *);

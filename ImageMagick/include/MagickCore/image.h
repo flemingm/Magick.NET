@@ -355,6 +355,15 @@ struct _Image
 
   PixelInfo
     matte_color;        /* current mattecolor attribute */
+
+  MagickBooleanType
+    composite_mask;
+
+  PixelTrait
+    mask_trait;       /* apply the clip or composite mask */
+
+  ChannelType
+    channels;
 };
 
 /*
@@ -536,6 +545,7 @@ extern MagickExport MagickBooleanType
   ListMagickInfo(FILE *,ExceptionInfo *),
   ModifyImage(Image **,ExceptionInfo *),
   ResetImagePage(Image *,const char *),
+  ResetImagePixels(Image *,ExceptionInfo *),
   SetImageAlpha(Image *,const Quantum,ExceptionInfo *),
   SetImageBackgroundColor(Image *,ExceptionInfo *),
   SetImageColor(Image *,const PixelInfo *,ExceptionInfo *),

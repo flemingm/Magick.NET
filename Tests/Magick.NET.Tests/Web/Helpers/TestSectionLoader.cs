@@ -10,14 +10,14 @@
 // either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
-#if !NETCOREAPP1_1
+#if !NETCORE
 
 using System.Configuration;
 using System.IO;
 using ImageMagick.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Magick.NET.Tests
+namespace Magick.NET.Tests.Web
 {
     [ExcludeFromCodeCoverage]
     public sealed class TestSectionLoader : ISectionLoader
@@ -34,7 +34,7 @@ namespace Magick.NET.Tests
         {
             ExeConfigurationFileMap map = new ExeConfigurationFileMap();
             map.ExeConfigFilename = _tempFile;
-            Configuration config = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);
+            var config = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);
 
             return config.GetSection(name) as MagickWebSettings;
         }

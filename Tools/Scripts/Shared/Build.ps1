@@ -23,7 +23,7 @@ function BuildTest($build,$codecov)
 function Build($build,$codecov,$configuration)
 {
     $platform=$($build.Platform).Replace("AnyCPU", "Any CPU")
-    $properties="Configuration=$($configuration)$($build.Quantum),RunCodeAnalysis=false,Platform=$platform"
+    $properties="Configuration=$($configuration)$($build.Quantum),Platform=$platform"
     if ($codecov -eq $true)
     {
         $properties+=",CodeCov=true"
@@ -41,9 +41,6 @@ function BuildSolution($solution, $properties)
 
     $location = $(Get-Location)
     Set-Location $directory
-
-    msbuild $filename /t:Restore ("/p:$($properties)")
-    CheckExitCode "Failed to restore: $($path)"
 
     msbuild $filename /t:Rebuild ("/p:$($properties)")
     CheckExitCode "Failed to build: $($path)"

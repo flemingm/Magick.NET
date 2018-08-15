@@ -74,6 +74,18 @@ namespace ImageMagick
         /// <summary>
         /// Initializes a new instance of the <see cref="MagickImage"/> class.
         /// </summary>
+        /// <param name="data">The byte array to read the image data from.</param>
+        /// <param name="pixelStorageSettings">The pixel storage settings to use when reading the image.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public MagickImage(byte[] data, PixelStorageSettings pixelStorageSettings)
+          : this()
+        {
+            ReadPixels(data, pixelStorageSettings);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MagickImage"/> class.
+        /// </summary>
         /// <param name="file">The file to read the image from.</param>
         /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
         public MagickImage(FileInfo file)
@@ -92,6 +104,18 @@ namespace ImageMagick
           : this()
         {
             Read(file, readSettings);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MagickImage"/> class.
+        /// </summary>
+        /// <param name="file">The file to read the image from.</param>
+        /// <param name="pixelStorageSettings">The pixel storage settings to use when reading the image.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public MagickImage(FileInfo file, PixelStorageSettings pixelStorageSettings)
+          : this()
+        {
+            ReadPixels(file, pixelStorageSettings);
         }
 
         /// <summary>
@@ -149,6 +173,18 @@ namespace ImageMagick
         /// <summary>
         /// Initializes a new instance of the <see cref="MagickImage"/> class.
         /// </summary>
+        /// <param name="stream">The stream to read the image data from.</param>
+        /// <param name="pixelStorageSettings">The pixel storage settings to use when reading the image.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public MagickImage(Stream stream, PixelStorageSettings pixelStorageSettings)
+          : this()
+        {
+            ReadPixels(stream, pixelStorageSettings);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MagickImage"/> class.
+        /// </summary>
         /// <param name="fileName">The fully qualified name of the image file, or the relative image file name.</param>
         /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
         public MagickImage(string fileName)
@@ -180,6 +216,18 @@ namespace ImageMagick
           : this()
         {
             Read(fileName, readSettings);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MagickImage"/> class.
+        /// </summary>
+        /// <param name="fileName">The fully qualified name of the image file, or the relative image file name.</param>
+        /// <param name="pixelStorageSettings">The pixel storage settings to use when reading the image.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public MagickImage(string fileName, PixelStorageSettings pixelStorageSettings)
+          : this()
+        {
+            ReadPixels(fileName, pixelStorageSettings);
         }
 
         private MagickImage(NativeMagickImage instance, MagickSettings settings)
@@ -528,7 +576,7 @@ namespace ImageMagick
         /// <summary>
         /// Gets the compression method of the image.
         /// </summary>
-        public Compression Compression
+        public CompressionMethod Compression
         {
             get { return _nativeInstance.Compression; }
         }
@@ -709,13 +757,15 @@ namespace ImageMagick
         }
 
         /// <summary>
+        /// Gets a value indicating whether the instance is disposed.
+        /// </summary>
+        public bool IsDisposed => _nativeInstance.IsDisposed;
+
+        /// <summary>
         /// Gets a value indicating whether none of the pixels in the image have an alpha value other
         /// than OpaqueAlpha (QuantumRange).
         /// </summary>
-        public bool IsOpaque
-        {
-            get { return _nativeInstance.IsOpaque; }
-        }
+        public bool IsOpaque => _nativeInstance.IsOpaque;
 
         /// <summary>
         /// Gets or sets the label of the image.
@@ -811,16 +861,6 @@ namespace ImageMagick
         }
 
         /// <summary>
-        /// Gets or sets the associated read mask of the image. The mask must be the same dimensions as the image and
-        /// only contain the colors black and white. Pass null to unset an existing mask.
-        /// </summary>
-        public IMagickImage ReadMask
-        {
-            get { return _nativeInstance.ReadMask; }
-            set { _nativeInstance.ReadMask = value; }
-        }
-
-        /// <summary>
         /// Gets or sets the type of rendering intent.
         /// </summary>
         public RenderingIntent RenderingIntent
@@ -870,16 +910,6 @@ namespace ImageMagick
         public int Width
         {
             get { return _nativeInstance.Width; }
-        }
-
-        /// <summary>
-        /// Gets or sets the associated write mask of the image. The mask must be the same dimensions as the image and
-        /// only contain the colors black and white. Pass null to unset an existing mask.
-        /// </summary>
-        public IMagickImage WriteMask
-        {
-            get { return _nativeInstance.WriteMask; }
-            set { _nativeInstance.WriteMask = value; }
         }
 
         /// <summary>
@@ -1010,13 +1040,17 @@ namespace ImageMagick
         /// Resize using mesh interpolation. It works well for small resizes of less than +/- 50%
         /// of the original image size. For larger resizing on images a full filtered and slower resize
         /// function should be used instead.
+        /// <para />
+        /// Resize will fit the image into the requested size. It does NOT fill, the requested box size.
+        /// Use the <see cref="MagickGeometry"/> overload for more control over the resulting size.
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
         /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
         public void AdaptiveResize(int width, int height)
         {
-            _nativeInstance.AdaptiveResize(width, height);
+            MagickGeometry geometry = new MagickGeometry(width, height);
+            AdaptiveResize(geometry);
         }
 
         /// <summary>
@@ -1030,7 +1064,7 @@ namespace ImageMagick
         {
             Throw.IfNull(nameof(geometry), geometry);
 
-            AdaptiveResize(geometry.Width, geometry.Height);
+            _nativeInstance.AdaptiveResize(MagickGeometry.ToString(geometry));
         }
 
         /// <summary>
@@ -1641,7 +1675,7 @@ namespace ImageMagick
         {
             Throw.IfNullOrEmpty(nameof(pathName), pathName);
 
-            _nativeInstance.ClipPath(pathName, !inside);
+            _nativeInstance.ClipPath(pathName, inside);
         }
 
         /// <summary>
@@ -2358,51 +2392,7 @@ namespace ImageMagick
         /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
         public void Crop(int width, int height, Gravity gravity)
         {
-            int imageWidth = Width;
-            int imageHeight = Height;
-
-            int newWidth = width > imageWidth ? imageWidth : width;
-            int newHeight = height > imageHeight ? imageHeight : height;
-
-            if (newWidth == imageWidth && newHeight == imageHeight)
-                return;
-
-            MagickGeometry geometry = new MagickGeometry(newWidth, newHeight);
-            switch (gravity)
-            {
-                case Gravity.North:
-                    geometry.X = (imageWidth - newWidth) / 2;
-                    break;
-                case Gravity.Northeast:
-                    geometry.X = imageWidth - newWidth;
-                    break;
-                case Gravity.East:
-                    geometry.X = imageWidth - newWidth;
-                    geometry.Y = (imageHeight - newHeight) / 2;
-                    break;
-                case Gravity.Southeast:
-                    geometry.X = imageWidth - newWidth;
-                    geometry.Y = imageHeight - newHeight;
-                    break;
-                case Gravity.South:
-                    geometry.X = (imageWidth - newWidth) / 2;
-                    geometry.Y = imageHeight - newHeight;
-                    break;
-                case Gravity.Southwest:
-                    geometry.Y = imageHeight - newHeight;
-                    break;
-                case Gravity.West:
-                    geometry.Y = (imageHeight - newHeight) / 2;
-                    break;
-                case Gravity.Northwest:
-                    break;
-                case Gravity.Center:
-                    geometry.X = (imageWidth - newWidth) / 2;
-                    geometry.Y = (imageHeight - newHeight) / 2;
-                    break;
-            }
-
-            Crop(geometry);
+            Crop(0, 0, width, height, gravity);
         }
 
         /// <summary>
@@ -2415,7 +2405,10 @@ namespace ImageMagick
         {
             Throw.IfNull(nameof(geometry), geometry);
 
-            _nativeInstance.Crop(MagickRectangle.FromGeometry(geometry, this));
+            if (geometry.AspectRatio)
+                _nativeInstance.CropAspectRatio(geometry.ToString(), Gravity.Undefined);
+            else
+                _nativeInstance.Crop(MagickRectangle.FromGeometry(geometry, this));
         }
 
         /// <summary>
@@ -2429,7 +2422,10 @@ namespace ImageMagick
         {
             Throw.IfNull(nameof(geometry), geometry);
 
-            Crop(geometry.Width, geometry.Height, gravity);
+            if (geometry.AspectRatio)
+                _nativeInstance.CropAspectRatio(geometry.ToString(), gravity);
+            else
+                Crop(geometry.X, geometry.Y, geometry.Width, geometry.Height, gravity);
         }
 
         /// <summary>
@@ -2549,7 +2545,7 @@ namespace ImageMagick
             Throw.IfNullOrEmpty(nameof(arguments), arguments);
 
             if (settings.Scale != null)
-                SetArtifact("distort:scale", settings.Scale.Value.ToString());
+                SetArtifact("distort:scale", settings.Scale.Value.ToString(CultureInfo.InvariantCulture));
 
             if (settings.Viewport != null)
                 SetArtifact("distort:viewport", settings.Viewport.ToString());
@@ -3330,6 +3326,26 @@ namespace ImageMagick
         }
 
         /// <summary>
+        /// Gets the associated read mask of the image.
+        /// </summary>
+        /// <returns>The associated read mask of the image.</returns>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public IMagickImage GetReadMask()
+        {
+            return Create(_nativeInstance.GetReadMask());
+        }
+
+        /// <summary>
+        /// Gets the associated write mask of the image.
+        /// </summary>
+        /// <returns>The associated write mask of the image.</returns>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public IMagickImage GetWriteMask()
+        {
+            return Create(_nativeInstance.GetWriteMask());
+        }
+
+        /// <summary>
         /// Retrieve the xmp profile from the image.
         /// </summary>
         /// <returns>The xmp profile from the image.</returns>
@@ -3933,7 +3949,19 @@ namespace ImageMagick
         /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
         public void LocalContrast(double radius, Percentage strength)
         {
-            _nativeInstance.LocalContrast(radius, strength.ToDouble());
+            LocalContrast(radius, strength, ImageMagick.Channels.Composite);
+        }
+
+        /// <summary>
+        /// Local contrast enhancement.
+        /// </summary>
+        /// <param name="radius">The radius of the Gaussian, in pixels, not counting the center pixel.</param>
+        /// <param name="strength">The strength of the blur mask.</param>
+        /// <param name="channels">The channel(s) that should be changed.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public void LocalContrast(double radius, Percentage strength, Channels channels)
+        {
+            _nativeInstance.LocalContrast(radius, strength.ToDouble(), channels);
         }
 
         /// <summary>
@@ -4735,7 +4763,7 @@ namespace ImageMagick
         }
 
         /// <summary>
-        /// Read single vector image frame.
+        /// Read single image frame.
         /// </summary>
         /// <param name="data">The byte array to read the image data from.</param>
         /// <param name="readSettings">The settings to use when reading the image.</param>
@@ -4772,7 +4800,7 @@ namespace ImageMagick
         }
 
         /// <summary>
-        /// Read single vector image frame.
+        /// Read single image frame.
         /// </summary>
         /// <param name="file">The file to read the image from.</param>
         /// <param name="readSettings">The settings to use when reading the image.</param>
@@ -4785,7 +4813,7 @@ namespace ImageMagick
         }
 
         /// <summary>
-        /// Read single vector image frame.
+        /// Read single image frame.
         /// </summary>
         /// <param name="color">The color to fill the image with.</param>
         /// <param name="width">The width.</param>
@@ -4830,7 +4858,7 @@ namespace ImageMagick
         }
 
         /// <summary>
-        /// Read single vector image frame.
+        /// Read single image frame.
         /// </summary>
         /// <param name="fileName">The fully qualified name of the image file, or the relative image file name.</param>
         /// <param name="width">The width.</param>
@@ -4838,15 +4866,17 @@ namespace ImageMagick
         /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
         public void Read(string fileName, int width, int height)
         {
-            MagickReadSettings readSettings = new MagickReadSettings(Settings);
-            readSettings.Width = width;
-            readSettings.Height = height;
+            MagickReadSettings readSettings = new MagickReadSettings(Settings)
+            {
+                Width = width,
+                Height = height,
+            };
 
             Read(fileName, readSettings);
         }
 
         /// <summary>
-        /// Read single vector image frame.
+        /// Read single image frame.
         /// </summary>
         /// <param name="fileName">The fully qualified name of the image file, or the relative image file name.</param>
         /// <param name="readSettings">The settings to use when reading the image.</param>
@@ -4854,6 +4884,61 @@ namespace ImageMagick
         public void Read(string fileName, MagickReadSettings readSettings)
         {
             Read(fileName, readSettings, false);
+        }
+
+        /// <summary>
+        /// Read single image frame.
+        /// </summary>
+        /// <param name="data">The byte array to read the image data from.</param>
+        /// <param name="settings">The pixel storage settings to use when reading the image.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public void ReadPixels(byte[] data, PixelStorageSettings settings)
+        {
+            Throw.IfNullOrEmpty(nameof(data), data);
+
+            ReadPixels(data, data.Length, settings);
+        }
+
+        /// <summary>
+        /// Read single image frame.
+        /// </summary>
+        /// <param name="file">The file to read the image from.</param>
+        /// <param name="settings">The pixel storage settings to use when reading the image.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public void ReadPixels(FileInfo file, PixelStorageSettings settings)
+        {
+            Throw.IfNull(nameof(file), file);
+
+            ReadPixels(file.FullName, settings);
+        }
+
+        /// <summary>
+        /// Read single image frame.
+        /// </summary>
+        /// <param name="stream">The stream to read the image data from.</param>
+        /// <param name="settings">The pixel storage settings to use when reading the image.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public void ReadPixels(Stream stream, PixelStorageSettings settings)
+        {
+            Throw.IfNullOrEmpty(nameof(stream), stream);
+
+            var bytes = new Bytes(stream);
+            ReadPixels(bytes.Data, bytes.Length, settings);
+        }
+
+        /// <summary>
+        /// Read single image frame.
+        /// </summary>
+        /// <param name="fileName">The fully qualified name of the image file, or the relative image file name.</param>
+        /// <param name="settings">The pixel storage settings to use when reading the image.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public void ReadPixels(string fileName, PixelStorageSettings settings)
+        {
+            string filePath = FileHelper.CheckForBaseDirectory(fileName);
+            Throw.IfNullOrEmpty(nameof(fileName), filePath);
+
+            byte[] data = File.ReadAllBytes(filePath);
+            ReadPixels(data, data.Length, settings);
         }
 
         /// <summary>
@@ -4926,6 +5011,24 @@ namespace ImageMagick
         }
 
         /// <summary>
+        /// Removes the associated read mask of the image.
+        /// </summary>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public void RemoveReadMask()
+        {
+            _nativeInstance.SetReadMask(null);
+        }
+
+        /// <summary>
+        /// Removes the associated write mask of the image.
+        /// </summary>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public void RemoveWriteMask()
+        {
+            _nativeInstance.SetWriteMask(null);
+        }
+
+        /// <summary>
         /// Resets the page property of this image.
         /// </summary>
         /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
@@ -4958,6 +5061,9 @@ namespace ImageMagick
 
         /// <summary>
         /// Resize image to specified size.
+        /// <para />
+        /// Resize will fit the image into the requested size. It does NOT fill, the requested box size.
+        /// Use the <see cref="MagickGeometry"/> overload for more control over the resulting size.
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
@@ -5052,19 +5158,10 @@ namespace ImageMagick
         }
 
         /// <summary>
-        /// Resize image by using simple ratio algorithm.
-        /// </summary>
-        /// <param name="width">The new width.</param>
-        /// <param name="height">The new height.</param>
-        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
-        public void Scale(int width, int height)
-        {
-            MagickGeometry geometry = new MagickGeometry(width, height);
-            Scale(geometry);
-        }
-
-        /// <summary>
         /// Resize image by using pixel sampling algorithm.
+        /// <para />
+        /// Resize will fit the image into the requested size. It does NOT fill, the requested box size.
+        /// Use the <see cref="MagickGeometry"/> overload for more control over the resulting size.
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
@@ -5110,6 +5207,21 @@ namespace ImageMagick
 
             MagickGeometry geometry = new MagickGeometry(percentageWidth, percentageHeight);
             Sample(geometry);
+        }
+
+        /// <summary>
+        /// Resize image by using simple ratio algorithm.
+        /// <para />
+        /// Resize will fit the image into the requested size. It does NOT fill, the requested box size.
+        /// Use the <see cref="MagickGeometry"/> overload for more control over the resulting size.
+        /// </summary>
+        /// <param name="width">The new width.</param>
+        /// <param name="height">The new height.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public void Scale(int width, int height)
+        {
+            MagickGeometry geometry = new MagickGeometry(width, height);
+            Scale(geometry);
         }
 
         /// <summary>
@@ -5343,6 +5455,32 @@ namespace ImageMagick
             Throw.IfNull(nameof(color), color);
 
             _nativeInstance.SetColormap(index, color);
+        }
+
+        /// <summary>
+        /// Sets the associated read mask of the image. The mask must be the same dimensions as the image and
+        /// only contain the colors black and white.
+        /// </summary>
+        /// <param name="image">The image that contains the read mask.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public void SetReadMask(IMagickImage image)
+        {
+            Throw.IfNull(nameof(image), image);
+
+            _nativeInstance.SetReadMask(image);
+        }
+
+        /// <summary>
+        /// Sets the associated write mask of the image. The mask must be the same dimensions as the image and
+        /// only contains the colors black and white.
+        /// </summary>
+        /// <param name="image">The image that contains the write mask.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>z
+        public void SetWriteMask(IMagickImage image)
+        {
+            Throw.IfNull(nameof(image), image);
+
+            _nativeInstance.SetWriteMask(image);
         }
 
         /// <summary>
@@ -5900,6 +6038,9 @@ namespace ImageMagick
 
         /// <summary>
         /// Resize image to thumbnail size.
+        /// <para />
+        /// Resize will fit the image into the requested size. It does NOT fill, the requested box size.
+        /// Use the <see cref="MagickGeometry"/> overload for more control over the resulting size.
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
@@ -6080,22 +6221,43 @@ namespace ImageMagick
         }
 
         /// <summary>
-        ///  Transforms the image from the colorspace of the source profile to the target profile. The
-        ///  source profile will only be used if the image does not contain a color profile. Nothing
-        ///  will happen if the source profile has a different colorspace then that of the image.
+        /// Transforms the image from the colorspace of the source profile to the target profile. This
+        /// requires the image to have a color profile. Nothing will happen if the image has no color profile.
+        /// </summary>
+        /// <param name="target">The target color profile</param>
+        /// <returns>True when the colorspace was transformed otherwise false.</returns>
+        public bool TransformColorSpace(ColorProfile target)
+        {
+            Throw.IfNull(nameof(target), target);
+
+            if (!_nativeInstance.HasProfile(target.Name))
+                return false;
+
+            AddProfile(target);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Transforms the image from the colorspace of the source profile to the target profile. The
+        /// source profile will only be used if the image does not contain a color profile. Nothing
+        /// will happen if the source profile has a different colorspace then that of the image.
         /// </summary>
         /// <param name="source">The source color profile.</param>
         /// <param name="target">The target color profile</param>
-        public void TransformColorSpace(ColorProfile source, ColorProfile target)
+        /// <returns>True when the colorspace was transformed otherwise false.</returns>
+        public bool TransformColorSpace(ColorProfile source, ColorProfile target)
         {
             Throw.IfNull(nameof(source), source);
             Throw.IfNull(nameof(target), target);
 
             if (source.ColorSpace != ColorSpace)
-                return;
+                return false;
 
             AddProfile(source, false);
             AddProfile(target);
+
+            return true;
         }
 
         /// <summary>
@@ -6348,6 +6510,18 @@ namespace ImageMagick
         }
 
         /// <summary>
+        /// Writes the image to the specified file.
+        /// </summary>
+        /// <param name="file">The file to write the image to.</param>
+        /// <param name="format">The format to use.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public void Write(FileInfo file, MagickFormat format)
+        {
+            Format = format;
+            Write(file);
+        }
+
+        /// <summary>
         /// Writes the image to the specified stream.
         /// </summary>
         /// <param name="stream">The stream to write the image data to.</param>
@@ -6425,6 +6599,18 @@ namespace ImageMagick
             Write(fileName);
         }
 
+        /// <summary>
+        /// Writes the image to the specified file name.
+        /// </summary>
+        /// <param name="fileName">The fully qualified name of the image file, or the relative image file name.</param>
+        /// <param name="format">The format to use.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        public void Write(string fileName, MagickFormat format)
+        {
+            Format = format;
+            Write(fileName);
+        }
+
         internal static IMagickImage Clone(IMagickImage image)
         {
             return image?.Clone();
@@ -6489,10 +6675,14 @@ namespace ImageMagick
             _nativeInstance.SetNext(image.GetInstance());
         }
 
-        private static int GetExpectedLength(MagickReadSettings settings)
+        [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "ReadSettings", Justification = "This is the correct spelling.")]
+        private static int GetExpectedLength(PixelStorageSettings pixelStorageSettings)
         {
-            int length = settings.Width.Value * settings.Height.Value * settings.PixelStorage.Mapping.Length;
-            switch (settings.PixelStorage.StorageType)
+            Throw.IfTrue(nameof(pixelStorageSettings), pixelStorageSettings.ReadSettings.Width == null, "ReadSettings.Width should be defined");
+            Throw.IfTrue(nameof(pixelStorageSettings), pixelStorageSettings.ReadSettings.Height == null, "ReadSettings.Height should be defined when pixel storage is set.");
+
+            int length = pixelStorageSettings.ReadSettings.Width.Value * pixelStorageSettings.ReadSettings.Height.Value * pixelStorageSettings.Mapping.Length;
+            switch (pixelStorageSettings.StorageType)
             {
                 case StorageType.Char:
                     return length;
@@ -6500,14 +6690,14 @@ namespace ImageMagick
                     return length * sizeof(double);
                 case StorageType.Float:
                     return length * sizeof(float);
-                case StorageType.Long:
-                    return length * sizeof(int);
-                case StorageType.LongLong:
-                    return length * sizeof(long);
+                case StorageType.Int32:
+                    return length * sizeof(Int32);
+                case StorageType.Int64:
+                    return length * sizeof(Int64);
                 case StorageType.Quantum:
                     return length * sizeof(QuantumType);
                 case StorageType.Short:
-                    return length * sizeof(short);
+                    return length * sizeof(ushort);
                 case StorageType.Undefined:
                 default:
                     throw new NotSupportedException();
@@ -6546,6 +6736,58 @@ namespace ImageMagick
             newReadSettings.ForceSingleFrame();
 
             return newReadSettings;
+        }
+
+        private void Crop(int x, int y, int width, int height, Gravity gravity)
+        {
+            int imageWidth = Width;
+            int imageHeight = Height;
+
+            int newWidth = width > imageWidth ? imageWidth : width;
+            int newHeight = height > imageHeight ? imageHeight : height;
+
+            if (newWidth == imageWidth && newHeight == imageHeight)
+                return;
+
+            MagickGeometry geometry = new MagickGeometry(newWidth, newHeight);
+            switch (gravity)
+            {
+                case Gravity.North:
+                    geometry.X = (imageWidth - newWidth) / 2;
+                    break;
+                case Gravity.Northeast:
+                    geometry.X = imageWidth - newWidth;
+                    break;
+                case Gravity.East:
+                    geometry.X = imageWidth - newWidth;
+                    geometry.Y = (imageHeight - newHeight) / 2;
+                    break;
+                case Gravity.Southeast:
+                    geometry.X = imageWidth - newWidth;
+                    geometry.Y = imageHeight - newHeight;
+                    break;
+                case Gravity.South:
+                    geometry.X = (imageWidth - newWidth) / 2;
+                    geometry.Y = imageHeight - newHeight;
+                    break;
+                case Gravity.Southwest:
+                    geometry.Y = imageHeight - newHeight;
+                    break;
+                case Gravity.West:
+                    geometry.Y = (imageHeight - newHeight) / 2;
+                    break;
+                case Gravity.Northwest:
+                    break;
+                case Gravity.Center:
+                    geometry.X = (imageWidth - newWidth) / 2;
+                    geometry.Y = (imageHeight - newHeight) / 2;
+                    break;
+            }
+
+            geometry.X += x;
+            geometry.Y += y;
+
+            Crop(geometry);
         }
 
         private void Dispose(bool disposing)
@@ -6705,19 +6947,16 @@ namespace ImageMagick
             MagickReadSettings newReadSettings = CreateReadSettings(readSettings);
             SetSettings(newReadSettings);
 
-            if (newReadSettings.PixelStorage != null)
-            {
-                ReadPixels(data, length, readSettings);
-                return;
-            }
-
             Settings.Ping = ping;
+
             _nativeInstance.ReadBlob(Settings, data, length);
+
+            ResetSettings();
         }
 
         private void Read(Stream stream, MagickReadSettings readSettings, bool ping)
         {
-            Throw.IfNull(nameof(stream), stream);
+            Throw.IfNullOrEmpty(nameof(stream), stream);
 
             Bytes bytes = Bytes.FromStreamBuffer(stream);
             if (bytes != null)
@@ -6728,13 +6967,6 @@ namespace ImageMagick
 
             MagickReadSettings newReadSettings = CreateReadSettings(readSettings);
             SetSettings(newReadSettings);
-
-            if (newReadSettings.PixelStorage != null)
-            {
-                bytes = new Bytes(stream);
-                ReadPixels(bytes.Data, bytes.Length, readSettings);
-                return;
-            }
 
             Settings.Ping = ping;
             Settings.FileName = null;
@@ -6753,6 +6985,8 @@ namespace ImageMagick
 
                 _nativeInstance.ReadStream(Settings, readStream, seekStream, tellStream);
             }
+
+            ResetSettings();
         }
 
         private void Read(string fileName, MagickReadSettings readSettings, bool ping)
@@ -6763,30 +6997,32 @@ namespace ImageMagick
             MagickReadSettings newReadSettings = CreateReadSettings(readSettings);
             SetSettings(newReadSettings);
 
-            if (newReadSettings.PixelStorage != null)
-            {
-                byte[] data = File.ReadAllBytes(filePath);
-                ReadPixels(data, data.Length, readSettings);
-                return;
-            }
-
             Settings.Ping = ping;
             Settings.FileName = filePath;
 
             _nativeInstance.ReadFile(Settings);
+
+            ResetSettings();
         }
 
-        private void ReadPixels(byte[] data, int length, MagickReadSettings readSettings)
+        private void ReadPixels(byte[] data, int length, PixelStorageSettings pixelStorageSettings)
         {
-            Throw.IfTrue(nameof(readSettings), readSettings.PixelStorage.StorageType == StorageType.Undefined, "Storage type should not be undefined.");
-            Throw.IfNull(nameof(readSettings), readSettings.Width, "Width should be defined when pixel storage is set.");
-            Throw.IfNull(nameof(readSettings), readSettings.Height, "Height should be defined when pixel storage is set.");
-            Throw.IfNullOrEmpty(nameof(readSettings), readSettings.PixelStorage.Mapping, "Pixel storage mapping should be defined.");
+            Throw.IfNull(nameof(pixelStorageSettings), pixelStorageSettings);
+            Throw.IfTrue(nameof(pixelStorageSettings), pixelStorageSettings.StorageType == StorageType.Undefined, "Storage type should not be undefined.");
+            Throw.IfTrue(nameof(pixelStorageSettings), string.IsNullOrEmpty(pixelStorageSettings.Mapping), "Pixel storage mapping should be defined.");
 
-            int expectedLength = GetExpectedLength(readSettings);
+            MagickReadSettings newReadSettings = CreateReadSettings(pixelStorageSettings.ReadSettings);
+            SetSettings(newReadSettings);
+
+            int expectedLength = GetExpectedLength(pixelStorageSettings);
             Throw.IfTrue(nameof(data), length < expectedLength, "The array length is " + length + " but should be at least " + expectedLength + ".");
 
-            _nativeInstance.ReadPixels(readSettings.Width.Value, readSettings.Height.Value, readSettings.PixelStorage.Mapping, readSettings.PixelStorage.StorageType, data);
+            _nativeInstance.ReadPixels(pixelStorageSettings.ReadSettings.Width.Value, pixelStorageSettings.ReadSettings.Height.Value, pixelStorageSettings.Mapping, pixelStorageSettings.StorageType, data);
+        }
+
+        private void ResetSettings()
+        {
+            Settings.Format = MagickFormat.Unknown;
         }
 
         private void SetInstance(NativeMagickImage instance)

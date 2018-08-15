@@ -14,6 +14,7 @@ using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Xml;
 using System.Xml.XPath;
@@ -151,13 +152,16 @@ namespace ImageMagick
 
             MagickImage image = null;
 
-            MagickReadSettings settings = CreateReadSettings((XmlElement)element.SelectSingleNode("readSettings"));
+            var readSettings = CreateReadSettings((XmlElement)element.SelectSingleNode("readSettings"));
+            var pixelStorageSettings = CreatePixelStorageSettings((XmlElement)element.SelectSingleNode("pixelStorageSettings"));
 
             string fileName = element.GetAttribute("fileName");
             if (!string.IsNullOrEmpty(fileName))
             {
-                if (settings != null)
-                    image = new MagickImage(fileName, settings);
+                if (readSettings != null)
+                    image = new MagickImage(fileName, readSettings);
+                else if (pixelStorageSettings != null)
+                    image = new MagickImage(fileName, pixelStorageSettings);
                 else
                     image = new MagickImage(fileName);
             }
@@ -168,7 +172,7 @@ namespace ImageMagick
 
                 string id = element.GetAttribute("id");
 
-                ScriptReadEventArgs eventArgs = new ScriptReadEventArgs(id, settings);
+                ScriptReadEventArgs eventArgs = new ScriptReadEventArgs(id, readSettings, pixelStorageSettings);
 
                 Read(this, eventArgs);
 
@@ -223,7 +227,7 @@ namespace ImageMagick
 
         private void Execute(XmlElement element, IMagickImage image)
         {
-            foreach (XmlElement elem in element.SelectNodes("*[name() != 'readSettings']"))
+            foreach (XmlElement elem in element.SelectNodes("*[name() != 'readSettings' and name() != 'pixelStorageSettings']"))
             {
                 ExecuteImage(elem, image);
             }
@@ -306,9 +310,84 @@ namespace ImageMagick
             }
         }
 
+        private double[] GetDoubleArray(XmlElement element)
+        {
+            if (element == null)
+                return null;
+
+            var result = Variables.GetDoubleArray(element);
+            if (result != null)
+                return result;
+
+            result = new double[element.ChildNodes.Count];
+            int index = 0;
+            foreach (XmlElement child in element.ChildNodes)
+            {
+                result[index++] = double.Parse(child.InnerText, CultureInfo.InvariantCulture);
+            }
+
+            return result;
+        }
+
+        private float[] GetSingleArray(XmlElement element)
+        {
+            if (element == null)
+                return null;
+
+            var result = Variables.GetSingleArray(element);
+            if (result != null)
+                return result;
+
+            result = new float[element.ChildNodes.Count];
+            int index = 0;
+            foreach (XmlElement child in element.ChildNodes)
+            {
+                result[index++] = float.Parse(child.InnerText, CultureInfo.InvariantCulture);
+            }
+
+            return result;
+        }
+
+        private string[] GetStringArray(XmlElement element)
+        {
+            if (element == null)
+                return null;
+
+            var result = Variables.GetStringArray(element);
+            if (result != null)
+                return result;
+
+            result = new string[element.ChildNodes.Count];
+            int index = 0;
+            foreach (XmlElement child in element.ChildNodes)
+            {
+                result[index++] = child.InnerText;
+            }
+
+            return result;
+        }
+
+        private T GetValue<T>(XmlAttribute attribute)
+        {
+            if (attribute == null)
+                return default(T);
+
+            if (Variables.TryGetValue(attribute, out T value))
+            {
+                return value;
+            }
+
+            return XmlHelper.GetValue<T>(attribute);
+        }
+
+        private T GetValue<T>(XmlElement element, string attribute)
+        {
+            return GetValue<T>(element.Attributes[attribute]);
+        }
+
         private void Initialize(Stream stream)
         {
-            Throw.IfNull(nameof(stream), stream);
+            Throw.IfNullOrEmpty(nameof(stream), stream);
 
             using (XmlReader xmlReader = XmlReader.Create(stream, _ReaderSettings))
             {

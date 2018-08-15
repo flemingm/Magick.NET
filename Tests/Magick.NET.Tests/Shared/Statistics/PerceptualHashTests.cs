@@ -14,7 +14,7 @@ using System;
 using ImageMagick;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Magick.NET.Tests
+namespace Magick.NET.Tests.Statistics
 {
     [TestClass]
     public class PerceptualHashTests
@@ -59,7 +59,7 @@ namespace Magick.NET.Tests
                 TestChannel(channel, 2, 3.9123, 3.9123, 1.5002, 1.5016);
                 TestChannel(channel, 3, 4.2920, 4.2920, 3.0739, 3.0682);
                 TestChannel(channel, 4, 8.7556, 8.7555, 5.4484, 5.4357);
-                TestChannel(channel, 5, 8.2997, 8.2994, 3.7144, 3.7052);
+                TestChannel(channel, 5, 8.2994, 8.2994, 3.7144, 3.7052);
                 TestChannel(channel, 6, 8.4398, 8.4397, 5.6010, 5.6031);
 #else
 #error Not implemented!
@@ -164,7 +164,7 @@ namespace Magick.NET.Tests
                 OpenCLValue.Assert("81b4488651898d38a7a8622346206c620f8a64bb8293d835f086f348cb368897a8c52881b1e884c58a0d18af2d622718fd35623ffdeaeda78b3aeda581d8484344824c083ad281c37895978c86d8c425628ee61b216279b81b48887318a1628af42622a2619d162372",
                                    "81b4488651898d38a7a8622346206c620f8a64888290c8360a86f668ca7b889168c61481b1e884c58a0d18af2d622718fd35623ffdeaeda78b3aeda581d8484344824c083ad281c37895978c86d8c425628ee61b216279b81b48887318a1628af42622a2619d162372", hash);
 #elif Q16HDRI
-                OpenCLValue.Assert("81b4488651898d48a7a8622346206c620f8a726582de983a9b878148d4d5891188daca81b1e884c58a0d18af2d622718fd35623ffdeaeda78b4aeda581d8484344824c083ad281c37895978c86d8c425628ee61b216279b81b48887318a1628af42622a2619d162372",
+                OpenCLValue.Assert("81b4488651898d38a7a8622346206b620f8a726582de983a9b878148d4d5891188daca81b1e884c58a0d18af2d622718fd35623ffdeaeda78b4aeda581d8484344824c083ad281c37895978c86d8c425628ee61b216279b81b48887318a1628af42622a2619d162372",
                                    "81b4488651898d38a7a8622346206b620f8a728c82ddf83aa9877da8d455890bc8dae081b1e884c58a0d18af2d622718fd35623ffdeaeda78b4aeda581d8484344824c083ad281c37895978c86d8c425628ee61b216279b81b48887318a1628af42622a2619d162372", hash);
 #else
 #error Not implemented!
@@ -188,11 +188,11 @@ namespace Magick.NET.Tests
 
                     PerceptualHash otherPhash = other.PerceptualHash();
 #if Q8
-                    OpenCLValue.Assert(312.06, 311.71, phash.SumSquaredDistance(otherPhash), 0.01);
+                    OpenCLValue.Assert(394.74, 394.32, phash.SumSquaredDistance(otherPhash), 0.01);
 #elif Q16
-                    OpenCLValue.Assert(311.40, 311.45, phash.SumSquaredDistance(otherPhash), 0.02);
+                    OpenCLValue.Assert(395.28, 395.33, phash.SumSquaredDistance(otherPhash), 0.02);
 #elif Q16HDRI
-                    OpenCLValue.Assert(311.24, 311.27, phash.SumSquaredDistance(otherPhash), 0.02);
+                    OpenCLValue.Assert(395.60, 395.59, phash.SumSquaredDistance(otherPhash), 0.02);
 #else
 #error Not implemented!
 #endif

@@ -10,7 +10,7 @@
 // either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
-#if !NETCOREAPP1_1
+#if !NETCORE
 
 using System.Configuration;
 using System.IO;
@@ -33,7 +33,7 @@ namespace Magick.NET.Tests.Web
             string config = @"
 <magick.net.web canCreateDirectories=""false"" cacheDirectory=""c:\cache"" useOpenCL=""true"">
   <urlResolvers>
-    <urlResolver type=""Magick.NET.Tests.TestFileUrlResolver, Magick.NET.Tests""/>
+    <urlResolver type=""Magick.NET.Tests.Web.TestFileUrlResolver, Magick.NET.Tests""/>
   </urlResolvers>
 </magick.net.web>";
 
@@ -50,9 +50,9 @@ namespace Magick.NET.Tests.Web
 
             config = @"
 <magick.net.web canCreateDirectories=""false"" cacheDirectory=""c:\cache"">
-  <resourceLimits width=""10000"" height=""20000""/>
+  <resourceLimits width=""30000"" height=""20000""/>
   <urlResolvers>
-    <urlResolver type=""Magick.NET.Tests.TestFileUrlResolver, Magick.NET.Tests""/>
+    <urlResolver type=""Magick.NET.Tests.Web.TestFileUrlResolver, Magick.NET.Tests""/>
   </urlResolvers>
 </magick.net.web>";
 
@@ -60,7 +60,7 @@ namespace Magick.NET.Tests.Web
             module.Initialize();
 
             Assert.IsFalse(OpenCL.IsEnabled);
-            Assert.AreEqual(10000UL, ResourceLimits.Width);
+            Assert.AreEqual(30000UL, ResourceLimits.Width);
             Assert.AreEqual(20000UL, ResourceLimits.Height);
         }
 
@@ -210,7 +210,7 @@ namespace Magick.NET.Tests.Web
             return CreateModule(@"
 <magick.net.web canCreateDirectories=""false"" cacheDirectory=""c:\cache"">
   <urlResolvers>
-    <urlResolver type=""Magick.NET.Tests.TestFileUrlResolver, Magick.NET.Tests""/>
+    <urlResolver type=""Magick.NET.Tests.Web.TestFileUrlResolver, Magick.NET.Tests""/>
   </urlResolvers>
 </magick.net.web>");
         }
@@ -220,7 +220,7 @@ namespace Magick.NET.Tests.Web
             return CreateModule(@"
 <magick.net.web canCreateDirectories=""false"" cacheDirectory=""c:\cache"">
   <urlResolvers>
-    <urlResolver type=""Magick.NET.Tests.TestStreamUrlResolver, Magick.NET.Tests""/>
+    <urlResolver type=""Magick.NET.Tests.Web.TestStreamUrlResolver, Magick.NET.Tests""/>
   </urlResolvers>
 </magick.net.web>");
         }

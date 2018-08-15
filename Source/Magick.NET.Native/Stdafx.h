@@ -11,9 +11,7 @@
 // and limitations under the License.
 #pragma once
 
-#ifdef MAGICK_NET_LINUX
-
-#include <MagickCore/magick-config.h>
+#if defined(MAGICK_NET_LINUX) || defined(MAGICK_NET_MACOS)
 
 #include <MagickCore/MagickCore.h>
 #include <MagickWand/MagickWand.h>
@@ -32,8 +30,6 @@
 #pragma warning(disable : 4255)
 #pragma warning(disable : 4668)
 #pragma warning(disable : 4996)
-
-#include "MagickCore/magick-config.h"
 
 #include <MagickCore/MagickCore.h>
 #include <MagickWand/MagickWand.h>
@@ -95,6 +91,11 @@ MAGICK_NET_LINK_LIB("lcms")
 MAGICK_NET_LINK_LIB("openjpeg")
 #endif
 
+#if defined(MAGICKCORE_HEIC_DELEGATE)
+MAGICK_NET_LINK_LIB("libde265")
+MAGICK_NET_LINK_LIB("libheif")
+#endif
+
 #if defined(MAGICKCORE_RAW_R_DELEGATE)
 MAGICK_NET_LINK_LIB("libraw")
 #endif
@@ -108,8 +109,11 @@ MAGICK_NET_LINK_LIB("lqr")
 MAGICK_NET_LINK_LIB("MagickCore")
 MAGICK_NET_LINK_LIB("MagickWand")
 
-#if defined(MAGICKCORE_PANGOCAIRO_DELEGATE)
+#if defined(MAGICKCORE_CAIRO_DELEGATE)
 MAGICK_NET_LINK_LIB("cairo")
+#endif
+
+#if defined(MAGICKCORE_PANGOCAIRO_DELEGATE)
 MAGICK_NET_LINK_LIB("pango")
 MAGICK_NET_LINK_LIB("pixman")
 #endif

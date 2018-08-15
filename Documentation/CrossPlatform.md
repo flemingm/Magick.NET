@@ -1,38 +1,26 @@
 # Cross-platform
 
-## Compiling Magick.NET.Native on Linux
+## Compiling Magick.NET.Native on Linux and macOS
 
-This step is not required but documented to explain how the Magick.NET.Native is compiled on Linux. To build Magick.NET.Native it is required to have
-a Linux build machine running. A docker file for this can be found in `Source/Magick.NET.CrossPlatform/ubuntu.16.04`. After changing the SSH-key
-and starting the container the `Magick.NET.CrossPlatform.sln` solution should be opened. It is possible that this requires installation of some
-extra components, instructions for that can be found [here](https://blogs.msdn.microsoft.com/vcblog/2016/03/30/visual-c-for-linux-development/).
-After opening the solution the `Remote Build Machine` should be configured. The project could be build from the solution but it is easier to use
-`Tools\BuildCrossPlatform.cmd` for this. This script will also copy the `.so` files to the `ImageMagick\(Q8/Q16/Q16-HDRI)\lib\Release\CrossPlatform`
-folders.
+The binaries for Linux and macOS are build on VSTS (https://dlemstra.visualstudio.com/Magick.NET/_build) with the help of scripts in the `Source/Magick.NET.CrossPlatform`
+folder. The `Build.Linux.sh` and `Build.macOS.sh` scripts in that folder create a statically linked library. Cloning the Magick.NET repository and running those scripts
+on a Linux or macOS machine can be done to create a custom build of the native library.
 
-## Compiling ImageMagick
+## Adding support for other formats
 
-Because Magick.NET is linked against the code of the ImageMagick github repository it is very likely that the Linux machine where Magick.NET should
-run on is not using the correct version of ImageMagick. The steps below are required to build ImageMagick. This is an example for Ubuntu 16.04 so it
-might be a bit different on another Linux distribution.
+Magick.NET uses a statically linked build of ImageMagick to allow for an extremely portable Linux binary. This means for most use cases, it will "just work" on
+standard glibc-based Linux distributions like Ubuntu or CentOS. Unfortunately, it also means some libraries and formats are left unsupported where an incompatible
+license or other issue prevents it.
 
-- Clone the Magick.NET repository from `https://github.com/dlemstra/Magick.NET.git`.
-- Switch to the tag that has the same version as the version of Magick.NET (for example `git checkout tags/1.2.3.4`).
-- Run `ImageMagick/Source/Checkout.sh` that will clone the ImageMagick repository.
-- An optional step is `sudo apt-get build-dep imagemagick` that will install all the dependencies.
-- Go to the folder `ImageMagick/Source/ImageMagick/ImageMagick` and run one of the following commands (depening on the quantum)
-    - Q8: `./configure --with-magick-plus-plus=no --with-quantum-depth=8 --enable-hdri=no`
-    - Q16: `./configure --with-magick-plus-plus=no --with-quantum-depth=16 --enable-hdri=no`
-    - Q16-HDRI: `./configure --with-magick-plus-plus=no --with-quantum-depth=16`
-- The next step is `make install` or `sudo make install`.
+To create a custom build of the native library Magick.NET the `Build.Linux.sh` or the `Build.macOS.sh` file will need to be tweaked.
 
 ## Extra requirements
 
-Magick.NET is also linked again `libjpeg.so.8` (used by the `JpegOptimizer`). Not all Linux platforms have this available by
-default which means it might be required to build [libjpeg-turbo](https://www.libjpeg-turbo.org/) from source. On Windows the following version of
-`libjpeg-turbo` is used: https://github.com/ImageMagick/jpeg-turbo.
+By default, Magick.NET has support built in for JPEG, TIFF, PNG, and WebP file formats. Lossless compression support includes zlib, lzma, and bzip2. There
+are no external dependencies beyond basic system libraries and glibc6/libm, which should be present by default on most Linux distros. 
 
-## Using Magick.NET on Linux
+Distributions based on musl libc such as Alpine will not have a glibc available, and will not work with Magick.NET out of the box. Compatibility layers for 
+glibc on musl-libc systems exist, but have not been tested successfully with Magick.NET. YMMV.
 
 ### .NET Core
 
@@ -43,28 +31,6 @@ Running Magick.NET with .NET Core on Linux requires adding the library as a pack
     <PackageReference Include="Magick.NET-Q8-x64" Version="7.x.x.x" />
   </ItemGroup>
 ```
-
-When running the project it is possible that the following error occurs:
-
-```
-Unhandled Exception: System.TypeInitializationException: The type initializer for 'NativeMagickSettings' threw an exception. --->
-  System.DllNotFoundException: Unable to load DLL 'Magick.NET-Q8-x64.Native.dll': The specified module could not be found.
-```
-
-This is most likely because the `Magick.NET-Q8-x64.Native.dll.so` file cannot find the ImageMagick libraries. This can be checked with the following
-command: `ldd Magick.NET-Q8-x64.Native.dll.so`:
-
-```
-linux-vdso.so.1 =>  (0x00007ffe95fea000)
-libMagickCore-7.Q8.so.3 => not found
-libMagickWand-7.Q8.so.3 => not found
-libjpeg.so.8 => /usr/lib/x86_64-linux-gnu/libjpeg.so.8 (0x00007fc00888b000)
-libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fc008582000)
-libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fc0081b8000)
-/lib64/ld-linux-x86-64.so.2 (0x00005568c223f000)
-```
-
-This can be resolved by setting `LD_LIBRARY_PATH`: `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/ImageMagick/libraries`
 
 ### Mono
 

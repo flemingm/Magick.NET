@@ -10,7 +10,7 @@
 // either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
-#if !NETSTANDARD1_3
+#if !NETSTANDARD
 
 using System;
 using System.Drawing;
@@ -79,32 +79,46 @@ namespace ImageMagick
         /// <returns>A <see cref="Bitmap"/> that has the format <see cref="ImageFormat.Bmp"/>.</returns>
         public Bitmap ToBitmap()
         {
-            if (ColorSpace == ColorSpace.CMYK)
-                ColorSpace = ColorSpace.sRGB;
+            IMagickImage image = this;
 
             string mapping = "BGR";
             PixelFormat format = PixelFormat.Format24bppRgb;
-            if (HasAlpha)
-            {
-                mapping = "BGRA";
-                format = PixelFormat.Format32bppArgb;
-            }
 
-            using (IPixelCollection pixels = GetPixelsUnsafe())
+            try
             {
-                Bitmap bitmap = new Bitmap(Width, Height, format);
-                BitmapData data = bitmap.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.ReadWrite, format);
-                IntPtr destination = data.Scan0;
-                for (int y = 0; y < Height; y++)
+                if (image.ColorSpace != ColorSpace.sRGB)
                 {
-                    byte[] bytes = pixels.ToByteArray(0, y, Width, 1, mapping);
-                    Marshal.Copy(bytes, 0, destination, bytes.Length);
-
-                    destination = new IntPtr(destination.ToInt64() + data.Stride);
+                    image = Clone();
+                    image.ColorSpace = ColorSpace.sRGB;
                 }
 
-                bitmap.UnlockBits(data);
-                return bitmap;
+                if (image.HasAlpha)
+                {
+                    mapping = "BGRA";
+                    format = PixelFormat.Format32bppArgb;
+                }
+
+                using (IPixelCollection pixels = image.GetPixelsUnsafe())
+                {
+                    Bitmap bitmap = new Bitmap(image.Width, image.Height, format);
+                    BitmapData data = bitmap.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadWrite, format);
+                    IntPtr destination = data.Scan0;
+                    for (int y = 0; y < Height; y++)
+                    {
+                        byte[] bytes = pixels.ToByteArray(0, y, Width, 1, mapping);
+                        Marshal.Copy(bytes, 0, destination, bytes.Length);
+
+                        destination = new IntPtr(destination.ToInt64() + data.Stride);
+                    }
+
+                    bitmap.UnlockBits(data);
+                    return bitmap;
+                }
+            }
+            finally
+            {
+                if (!ReferenceEquals(this, image))
+                    image.Dispose();
             }
         }
 
@@ -132,27 +146,46 @@ namespace ImageMagick
         /// <returns>A <see cref="BitmapSource"/>.</returns>
         public BitmapSource ToBitmapSource()
         {
+            IMagickImage image = this;
+
             string mapping = "RGB";
             MediaPixelFormat format = MediaPixelFormats.Rgb24;
-            if (HasAlpha)
+
+            try
             {
-                mapping = "BGRA";
-                format = MediaPixelFormats.Bgra32;
+                if (ColorSpace == ColorSpace.CMYK)
+                {
+                    mapping = "CMYK";
+                    format = MediaPixelFormats.Cmyk32;
+                }
+                else
+                {
+                    if (ColorSpace != ColorSpace.sRGB)
+                    {
+                        image = Clone();
+                        image.ColorSpace = ColorSpace.sRGB;
+                    }
+
+                    if (image.HasAlpha)
+                    {
+                        mapping = "BGRA";
+                        format = MediaPixelFormats.Bgra32;
+                    }
+                }
+
+                int step = format.BitsPerPixel / 8;
+                int stride = Width * step;
+
+                using (IPixelCollection pixels = image.GetPixelsUnsafe())
+                {
+                    byte[] bytes = pixels.ToByteArray(mapping);
+                    return BitmapSource.Create(Width, Height, 96, 96, format, null, bytes, stride);
+                }
             }
-
-            if (ColorSpace == ColorSpace.CMYK)
+            finally
             {
-                mapping = "CMYK";
-                format = MediaPixelFormats.Cmyk32;
-            }
-
-            int step = format.BitsPerPixel / 8;
-            int stride = Width * step;
-
-            using (IPixelCollection pixels = GetPixelsUnsafe())
-            {
-                byte[] bytes = pixels.ToByteArray(mapping);
-                return BitmapSource.Create(Width, Height, 96, 96, format, null, bytes, stride);
+                if (!ReferenceEquals(this, image))
+                    image.Dispose();
             }
         }
 #endif

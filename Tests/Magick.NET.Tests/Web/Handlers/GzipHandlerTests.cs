@@ -10,7 +10,7 @@
 // either express or implied. See the License for the specific language governing permissions
 // and limitations under the License.
 
-#if !NETCOREAPP1_1
+#if !NETCORE
 
 using System;
 using System.IO;
@@ -21,7 +21,7 @@ using ImageMagick.Web;
 using ImageMagick.Web.Handlers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Magick.NET.Tests
+namespace Magick.NET.Tests.Web.Handlers
 {
     [TestClass]
     public class GzipHandlerTests

@@ -1,11 +1,15 @@
 # The .NET library for ImageMagick: Magick.NET
 
 [![GitHub license](https://img.shields.io/badge/license-Apache%202-green.svg)](https://raw.githubusercontent.com/dlemstra/Magick.NET/master/License.txt)
-[![Build status](https://ci.appveyor.com/api/projects/status/5y970okju7ru901x?svg=true)](https://ci.appveyor.com/project/dlemstra/magick-net)
-[![codecov](https://codecov.io/gh/dlemstra/Magick.NET/branch/master/graph/badge.svg)](https://codecov.io/gh/dlemstra/Magick.NET)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Magick-NET/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Twitter URL](https://img.shields.io/badge/twitter-follow-1da1f2.svg)](https://twitter.com/MagickNET)
 [![Donate](https://img.shields.io/badge/%24-donate-ff00ff.svg)](https://www.paypal.me/DirkLemstra)
+
+|             |Native build|Build Status|Code Coverage|
+|-------------|:----------:|:----------:|:-----------:|
+|**Windows**  ||[![Build status](https://ci.appveyor.com/api/projects/status/5y970okju7ru901x?svg=true)](https://ci.appveyor.com/project/dlemstra/magick-net)|[![codecov](https://codecov.io/gh/dlemstra/Magick.NET/branch/master/graph/badge.svg)](https://codecov.io/gh/dlemstra/Magick.NET)|
+|**Linux**    |[![Build status](https://dlemstra.visualstudio.com/Magick.NET/_apis/build/status/Magick.NET-Linux)](https://dlemstra.visualstudio.com/Magick.NET/_build/latest?definitionId=4)|[![Build Status](https://travis-ci.org/dlemstra/Magick.NET.svg?branch=master)](https://travis-ci.org/dlemstra/Magick.NET)|[![codecov](https://codecov.io/gh/dlemstra/Magick.NET/branch/master/graph/badge.svg)](https://codecov.io/gh/dlemstra/Magick.NET)|
+|**macOS**    |[![Build status](https://dlemstra.visualstudio.com/Magick.NET/_apis/build/status/Magick.NET-macOS)](https://dlemstra.visualstudio.com/Magick.NET/_build/latest?definitionId=5)|[![Build Status](https://travis-ci.org/dlemstra/Magick.NET.svg?branch=master)](https://travis-ci.org/dlemstra/Magick.NET)|[![codecov](https://codecov.io/gh/dlemstra/Magick.NET/branch/master/graph/badge.svg)](https://codecov.io/gh/dlemstra/Magick.NET)|
 
 ImageMagick is a powerful image manipulation library that supports over [100 major file formats](https://www.imagemagick.org/script/formats.php) (not including sub-formats).
 With Magick.NET you can use ImageMagick in your C#/VB.NET/.NET Core application without having to install ImageMagick on your server or desktop.
@@ -22,7 +26,25 @@ For more information about ImageMagick go to: [http://www.imagemagick.org/](http
 
 ## Download
 
-Click [here](https://github.com/dlemstra/Magick.NET/releases) to download Magick.NET. You can also install Magick.NET using NuGet, click [here](https://nuget.org/profiles/dlemstra/) to
+You can add Magick.NET to your project with one of the following NuGet packages:
+
+| Package | Linux | macOS | Windows | Downloads
+|-|-|-|-|-|
+| [Magick.NET-Q8-x64](https://www.nuget.org/packages/Magick.NET-Q8-x64/) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q8-x64.svg) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q8-x64.svg) |  ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q8-x64.svg) | ![NuGet](https://img.shields.io/nuget/dt/Magick.NET-Q8-x64.svg)
+| [Magick.NET-Q8-x86](https://www.nuget.org/packages/Magick.NET-Q8-x86/) | | | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q8-x86.svg) | ![NuGet](https://img.shields.io/nuget/dt/Magick.NET-Q8-x86.svg)
+| [Magick.NET-Q8-AnyCPU](https://www.nuget.org/packages/Magick.NET-Q8-AnyCPU/) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q8-AnyCPU.svg) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q8-AnyCPU.svg) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q8-AnyCPU.svg) | ![NuGet](https://img.shields.io/nuget/dt/Magick.NET-Q8-AnyCPU.svg)
+| [Magick.NET-Q8-x64-OpenMP](https://www.nuget.org/packages/Magick.NET-Q8-x64-OpenMP/)| | | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q8-x64-OpenMP.svg) | ![NuGet](https://img.shields.io/nuget/dt/Magick.NET-Q8-x64-OpenMP.svg) 
+| [Magick.NET-Q16-x64](https://www.nuget.org/packages/Magick.NET-Q16-x64/) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-x64.svg) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-x64.svg) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-x64.svg) | ![NuGet](https://img.shields.io/nuget/dt/Magick.NET-Q16-x64.svg)
+| [Magick.NET-Q16-x86](https://www.nuget.org/packages/Magick.NET-Q16-x86/) | | | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-x86.svg) | ![NuGet](https://img.shields.io/nuget/dt/Magick.NET-Q16-x86.svg)
+| [Magick.NET-Q16-AnyCPU](https://www.nuget.org/packages/Magick.NET-Q16-AnyCPU/) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-AnyCPU.svg) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-AnyCPU.svg) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-AnyCPU.svg) | ![NuGet](https://img.shields.io/nuget/dt/Magick.NET-Q16-AnyCPU.svg)
+| [Magick.NET-Q16-x64-OpenMP](https://www.nuget.org/packages/Magick.NET-Q16-x64-OpenMP/) | | | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-x64-OpenMP.svg) | ![NuGet](https://img.shields.io/nuget/dt/Magick.NET-Q16-x64-OpenMP.svg)
+| [Magick.NET-Q16-HDRI-x64](https://www.nuget.org/packages/Magick.NET-Q16-HDRI-x64/) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-HDRI-x64.svg) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-HDRI-x64.svg) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-HDRI-x64.svg) | ![NuGet](https://img.shields.io/nuget/dt/Magick.NET-Q16-HDRI-x64.svg)
+| [Magick.NET-Q16-HDRI-x86](https://www.nuget.org/packages/Magick.NET-Q16-HDRI-x86/) | | | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-HDRI-x86.svg) | ![NuGet](https://img.shields.io/nuget/dt/Magick.NET-Q16-HDRI-x86.svg)
+| [Magick.NET-Q16-HDRI-AnyCPU](https://www.nuget.org/packages/Magick.NET-Q16-HDRI-AnyCPU/) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-HDRI-AnyCPU.svg) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-HDRI-AnyCPU.svg) | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-HDRI-AnyCPU.svg) | ![NuGet](https://img.shields.io/nuget/dt/Magick.NET-Q16-HDRI-AnyCPU.svg)
+| [Magick.NET-Q16-HDRI-x64-OpenMP](https://www.nuget.org/packages/Magick.NET-Q16-HDRI-x64-OpenMP/) | | | ![NuGet](https://img.shields.io/nuget/v/Magick.NET-Q16-HDRI-x64-OpenMP.svg) | ![NuGet](https://img.shields.io/nuget/dt/Magick.NET-Q16-HDRI-x64-OpenMP.svg)
+
+
+Or click [here](https://github.com/dlemstra/Magick.NET/releases) to download Magick.NET. You can also install Magick.NET samples from NuGet, click [here](https://nuget.org/profiles/dlemstra/) to
 see the available packages. And follow me on twitter([@MagickNET](https://twitter.com/MagickNET)) to receive information about new downloads and changes to Magick.NET and ImageMagick.
 
 ## Development build

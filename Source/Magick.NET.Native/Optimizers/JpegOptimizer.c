@@ -13,7 +13,7 @@
 #include "Stdafx.h"
 #include "JpegOptimizer.h"
 
-#ifdef MAGICK_NET_LINUX
+#if defined(MAGICK_NET_LINUX) || defined(MAGICK_NET_MACOS)
 #include <jpeglib.h>
 #include <jerror.h>
 #define fopen_utf8 fopen
@@ -61,10 +61,11 @@ typedef struct _ClientData
     *coefficients;
 
   Marker
-    *icc_marker;
+    *markers[15];
 
   size_t
     height,
+    markers_count,
     quality;
 } ClientData;
 
@@ -344,20 +345,23 @@ static boolean DecompressJpeg(j_decompress_ptr decompress_info, ClientData *clie
 {
   size_t
     i,
+    size,
     width;
 
   jpeg_start_decompress(decompress_info);
 
-  client_data->buffer = malloc(sizeof(JSAMPROW) * decompress_info->output_height);
+  size = sizeof(JSAMPROW) * decompress_info->output_height;
+  client_data->buffer = malloc(size);
   if (client_data->buffer == (JSAMPARRAY)NULL)
     return FALSE;
+  (void)memset(client_data->buffer, 0, size);
   client_data->height = decompress_info->output_height;
 
   width = sizeof(JSAMPLE) * decompress_info->output_width * decompress_info->out_color_components;
   for (i = 0; i < decompress_info->output_height; i++)
   {
     client_data->buffer[i] = malloc(width);
-    if (client_data->buffer[i] == (JSAMPLE *)NULL)
+    if (client_data->buffer[i] == (JSAMPROW)NULL)
       return FALSE;
   }
 
@@ -373,15 +377,18 @@ static boolean DecompressJpeg(j_decompress_ptr decompress_info, ClientData *clie
 static int GetCharacter(j_decompress_ptr jpeg_info)
 {
   if (jpeg_info->src->bytes_in_buffer == 0)
-    (void) (*jpeg_info->src->fill_input_buffer)(jpeg_info);
+    (void)(*jpeg_info->src->fill_input_buffer)(jpeg_info);
   jpeg_info->src->bytes_in_buffer--;
   return (int)GETJOCTET(*jpeg_info->src->next_input_byte++);
 }
 
-static boolean ReadICCMarker(j_decompress_ptr jpeg_info)
+static boolean ReadMarker(j_decompress_ptr jpeg_info)
 {
   ClientData
     *client_data;
+
+  Marker
+    *marker;
 
   register ssize_t
     i;
@@ -399,19 +406,24 @@ static boolean ReadICCMarker(j_decompress_ptr jpeg_info)
   length -= 2;
 
   client_data = (ClientData *)jpeg_info->client_data;
-  client_data->icc_marker = malloc(sizeof(*client_data->icc_marker));
-  if (client_data->icc_marker == (Marker *)NULL)
+  if (client_data->markers_count == sizeof(client_data->markers))
     return FALSE;
 
-  ResetMagickMemory(client_data->icc_marker, 0, sizeof(*client_data->icc_marker));
-
-  client_data->icc_marker->code = jpeg_info->unread_marker;
-  client_data->icc_marker->length = length;
-  client_data->icc_marker->buffer = malloc(length * sizeof(*client_data->icc_marker->buffer));
-  if (client_data->icc_marker->buffer == (JOCTET *)NULL)
+  marker = malloc(sizeof(*marker));
+  if (marker == (Marker *)NULL)
     return FALSE;
 
-  p = client_data->icc_marker->buffer;
+  client_data->markers[client_data->markers_count++] = marker;
+
+  (void)memset(marker, 0, sizeof(*marker));
+
+  marker->code = jpeg_info->unread_marker;
+  marker->length = length;
+  marker->buffer = malloc(length * sizeof(*marker->buffer));
+  if (marker->buffer == (JOCTET *)NULL)
+    return FALSE;
+
+  p = marker->buffer;
   for (i = 0; i < (ssize_t)length; i++)
     *p++ = (JOCTET)GetCharacter(jpeg_info);
 
@@ -437,8 +449,18 @@ static boolean ReadJpeg(j_decompress_ptr decompress_info, ClientData *client_dat
   if (source == (SourceManager *)NULL)
     return FALSE;
 
-  /* For now we only preserve the ICC profile */
-  jpeg_set_marker_processor(decompress_info, (int)(JPEG_APP0 + 2), ReadICCMarker);
+  /* The ICC profile will always be preserved */
+  jpeg_set_marker_processor(decompress_info, (int)(JPEG_APP0 + 2), ReadMarker);
+
+  if (client_data->lossless != FALSE)
+  {
+    ssize_t
+      i;
+
+    for (i = 1; i < 16; i++)
+      if (i != 2)
+        jpeg_set_marker_processor(decompress_info, (int)(JPEG_APP0 + i), ReadMarker);
+  }
 
   jpeg_read_header(decompress_info, TRUE);
 
@@ -567,7 +589,7 @@ static void CompressJpeg(j_decompress_ptr decompress_info, j_compress_ptr compre
     quality = client_data->quality;
   else
     quality = DetermineQuality(decompress_info);
-  jpeg_set_quality(compress_info, quality, TRUE);
+  jpeg_set_quality(compress_info, (int)quality, TRUE);
   compress_info->optimize_coding = TRUE;
   if (client_data->progressive != FALSE)
     jpeg_simple_progression(compress_info);
@@ -577,7 +599,7 @@ static void CompressJpeg(j_decompress_ptr decompress_info, j_compress_ptr compre
   while (compress_info->next_scanline < compress_info->image_height)
   {
     jpeg_write_scanlines(compress_info, &client_data->buffer[compress_info->next_scanline],
-      client_data->height);
+      (JDIMENSION)client_data->height);
   }
 }
 
@@ -593,12 +615,15 @@ static void WriteCoefficients(j_decompress_ptr decompress_info, j_compress_ptr c
   jpeg_write_coefficients(compress_info, client_data->coefficients);
 }
 
-static void WriteICCMarker(j_compress_ptr compress_info, ClientData *client_data)
+static void WriteMarkers(j_compress_ptr compress_info, ClientData *client_data)
 {
-  if (client_data->icc_marker == (Marker*)NULL)
-    return;
+  register ssize_t
+    i;
 
-  jpeg_write_marker(compress_info, client_data->icc_marker->code, (const JOCTET *)client_data->icc_marker->buffer, (unsigned int)client_data->icc_marker->length);
+  for (i = 0; i < (ssize_t)client_data->markers_count; i++)
+  {
+    jpeg_write_marker(compress_info, client_data->markers[i]->code, (const JOCTET *)client_data->markers[i]->buffer, (unsigned int)client_data->markers[i]->length);
+  }
 }
 
 static boolean WriteJpeg(j_decompress_ptr decompress_info, ClientData *client_data)
@@ -612,7 +637,7 @@ static boolean WriteJpeg(j_decompress_ptr decompress_info, ClientData *client_da
   struct jpeg_error_mgr
     jpeg_error;
 
-  ResetMagickMemory(&compress_info, 0, sizeof(compress_info));
+  (void)memset(&compress_info, 0, sizeof(compress_info));
 
   destination = (DestinationManager *)NULL;
   if (setjmp(client_data->error_recovery) != 0)
@@ -641,7 +666,7 @@ static boolean WriteJpeg(j_decompress_ptr decompress_info, ClientData *client_da
   else
     WriteCoefficients(decompress_info, &compress_info, client_data);
 
-  WriteICCMarker(&compress_info, client_data);
+  WriteMarkers(&compress_info, client_data);
 
   jpeg_finish_compress(&compress_info);
   jpeg_destroy_compress(&compress_info);
@@ -651,21 +676,22 @@ static boolean WriteJpeg(j_decompress_ptr decompress_info, ClientData *client_da
 
 static void TerminateClientData(ClientData *client_data)
 {
-  size_t
+  register ssize_t
     i;
 
-  if (client_data->icc_marker != (Marker *)NULL)
+  for (i = 0; i < (ssize_t)client_data->markers_count; i++)
   {
-    if (client_data->icc_marker->buffer != (JOCTET *) NULL)
-      free(client_data->icc_marker->buffer);
-    free(client_data->icc_marker);
+    if (client_data->markers[i]->buffer != (JOCTET *)NULL)
+      free(client_data->markers[i]->buffer);
+    free(client_data->markers[i]);
   }
 
   if (client_data->height == 0)
     return;
 
-  for (i = 0; i < client_data->height; i++)
-    free(client_data->buffer[i]);
+  for (i = 0; i < (ssize_t)client_data->height; i++)
+    if (client_data->buffer[i] != (JSAMPROW)NULL)
+      free(client_data->buffer[i]);
   free(client_data->buffer);
 
   client_data->height = 0;
@@ -683,7 +709,7 @@ static size_t JpegOptimizer_Compress(ClientData *client_data, const MagickBoolea
   client_data->lossless = lessless != MagickFalse ? TRUE : FALSE;
   client_data->quality = quality;
 
-  ResetMagickMemory(&decompress_info, 0, sizeof(decompress_info));
+  (void)memset(&decompress_info, 0, sizeof(decompress_info));
   decompress_info.err = jpeg_std_error(&jpeg_error);
   decompress_info.err->emit_message = (void(*)(j_common_ptr, int)) JpegWarningHandler;
   decompress_info.err->error_exit = (void(*)(j_common_ptr)) JpegErrorHandler;
@@ -715,7 +741,7 @@ MAGICK_NET_EXPORT size_t JpegOptimizer_CompressFile(const char *input, const cha
   ClientData
     client_data;
 
-  ResetMagickMemory(&client_data, 0, sizeof(client_data));
+  (void)memset(&client_data, 0, sizeof(client_data));
 
   client_data.inputFileName = input;
   client_data.outputFileName = output;
@@ -728,7 +754,7 @@ MAGICK_NET_EXPORT size_t JpegOptimizer_CompressStream(const CustomStreamHandler 
   ClientData
     client_data;
 
-  ResetMagickMemory(&client_data, 0, sizeof(client_data));
+  (void)memset(&client_data, 0, sizeof(client_data));
 
   client_data.reader = reader;
   client_data.writer = writer;

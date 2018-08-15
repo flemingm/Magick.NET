@@ -29,11 +29,11 @@ extern "C" {
 #endif
 
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__MINGW32__)
-#  define MagickLLConstant(c)  (MagickOffsetType) (c ## i64)
-#  define MagickULLConstant(c)  (MagickSizeType) (c ## ui64)
+#  define MagickLLConstant(c)  ((MagickOffsetType) (c ## i64))
+#  define MagickULLConstant(c)  ((MagickSizeType) (c ## ui64))
 #else
-#  define MagickLLConstant(c)  (MagickOffsetType) (c ## LL)
-#  define MagickULLConstant(c)  (MagickSizeType) (c ## ULL)
+#  define MagickLLConstant(c)  ((MagickOffsetType) (c ## LL))
+#  define MagickULLConstant(c)  ((MagickSizeType) (c ## ULL))
 #endif
 
 #if MAGICKCORE_SIZEOF_FLOAT_T == 0
@@ -107,7 +107,7 @@ typedef MagickDoubleType Quantum;
 #else
 #error "MAGICKCORE_QUANTUM_DEPTH must be one of 8, 16, 32, or 64"
 #endif
-#define MagickEpsilon  (1.0e-15)
+#define MagickEpsilon  (1.0e-12)
 #define MagickMaximumValue  1.79769313486231570E+308
 #define MagickMinimumValue   2.22507385850720140E-308
 #define QuantumScale  ((double) 1.0/(double) QuantumRange)
@@ -176,10 +176,10 @@ typedef enum
 #  include <float.h>
 #  define IsNaN(a) _isnan(a)
 #else
-#  define IsNaN(a) (a != a)
+#  define IsNaN(a) ((a) != (a))
 #endif
 #if !defined(INFINITY)
-#  define INFINITY (log(0))
+#  define INFINITY (-logf(0f))
 #endif
 
 typedef struct _BlobInfo BlobInfo;

@@ -165,7 +165,7 @@ namespace ImageMagick
         /// <summary>
         /// Gets the compression method of the image.
         /// </summary>
-        Compression Compression { get; }
+        CompressionMethod Compression { get; }
 
         /// <summary>
         /// Gets or sets the vertical and horizontal resolution in pixels of the image.
@@ -246,6 +246,11 @@ namespace ImageMagick
         PixelInterpolateMethod Interpolate { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether the instance is disposed.
+        /// </summary>
+        bool IsDisposed { get; }
+
+        /// <summary>
         /// Gets a value indicating whether none of the pixels in the image have an alpha value other
         /// than OpaqueAlpha (QuantumRange).
         /// </summary>
@@ -282,12 +287,6 @@ namespace ImageMagick
         int Quality { get; set; }
 
         /// <summary>
-        /// Gets or sets the associated read mask of the image. The mask must be the same dimensions as the image and
-        /// only contain the colors black and white. Pass null to unset an existing mask.
-        /// </summary>
-        IMagickImage ReadMask { get; set; }
-
-        /// <summary>
         /// Gets or sets the type of rendering intent.
         /// </summary>
         RenderingIntent RenderingIntent { get; set; }
@@ -319,12 +318,6 @@ namespace ImageMagick
         int Width { get; }
 
         /// <summary>
-        /// Gets or sets the associated write mask of the image. The mask must be the same dimensions as the image and
-        /// only contain the colors black and white. Pass null to unset an existing mask.
-        /// </summary>
-        IMagickImage WriteMask { get; set; }
-
-        /// <summary>
         /// Adaptive-blur image with the default blur factor (0x1).
         /// </summary>
         /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
@@ -349,6 +342,9 @@ namespace ImageMagick
         /// Resize using mesh interpolation. It works well for small resizes of less than +/- 50%
         /// of the original image size. For larger resizing on images a full filtered and slower resize
         /// function should be used instead.
+        /// <para />
+        /// Resize will fit the image into the requested size. It does NOT fill, the requested box size.
+        /// Use the <see cref="MagickGeometry"/> overload for more control over the resulting size.
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
@@ -1815,6 +1811,22 @@ namespace ImageMagick
         ImageProfile GetProfile(string name);
 
         /// <summary>
+        /// Gets the associated read mask of the image.
+        /// </summary>
+        /// <returns>The associated read mask of the image.</returns>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Should be a method.")]
+        IMagickImage GetReadMask();
+
+        /// <summary>
+        /// Gets the associated write mask of the image.
+        /// </summary>
+        /// <returns>The associated write mask of the image.</returns>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Should be a method.")]
+        IMagickImage GetWriteMask();
+
+        /// <summary>
         /// Retrieve the xmp profile from the image.
         /// </summary>
         /// <returns>The xmp profile from the image.</returns>
@@ -2249,6 +2261,15 @@ namespace ImageMagick
         /// <param name="strength">The strength of the blur mask.</param>
         /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
         void LocalContrast(double radius, Percentage strength);
+
+        /// <summary>
+        /// Local contrast enhancement.
+        /// </summary>
+        /// <param name="radius">The radius of the Gaussian, in pixels, not counting the center pixel.</param>
+        /// <param name="strength">The strength of the blur mask.</param>
+        /// <param name="channels">The channel(s) that should be changed.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        void LocalContrast(double radius, Percentage strength, Channels channels);
 
         /// <summary>
         /// Lower image (lighten or darken the edges of an image to give a 3-D lowered effect).
@@ -2771,7 +2792,7 @@ namespace ImageMagick
         void Read(byte[] data);
 
         /// <summary>
-        /// Read single vector image frame.
+        /// Read single image frame.
         /// </summary>
         /// <param name="data">The byte array to read the image data from.</param>
         /// <param name="readSettings">The settings to use when reading the image.</param>
@@ -2795,7 +2816,7 @@ namespace ImageMagick
         void Read(FileInfo file, int width, int height);
 
         /// <summary>
-        /// Read single vector image frame.
+        /// Read single image frame.
         /// </summary>
         /// <param name="file">The file to read the image from.</param>
         /// <param name="readSettings">The settings to use when reading the image.</param>
@@ -2803,7 +2824,7 @@ namespace ImageMagick
         void Read(FileInfo file, MagickReadSettings readSettings);
 
         /// <summary>
-        /// Read single vector image frame.
+        /// Read single image frame.
         /// </summary>
         /// <param name="color">The color to fill the image with.</param>
         /// <param name="width">The width.</param>
@@ -2834,7 +2855,7 @@ namespace ImageMagick
         void Read(string fileName);
 
         /// <summary>
-        /// Read single vector image frame.
+        /// Read single image frame.
         /// </summary>
         /// <param name="fileName">The fully qualified name of the image file, or the relative image file name.</param>
         /// <param name="width">The width.</param>
@@ -2843,12 +2864,44 @@ namespace ImageMagick
         void Read(string fileName, int width, int height);
 
         /// <summary>
-        /// Read single vector image frame.
+        /// Read single image frame.
         /// </summary>
         /// <param name="fileName">The fully qualified name of the image file, or the relative image file name.</param>
         /// <param name="readSettings">The settings to use when reading the image.</param>
         /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
         void Read(string fileName, MagickReadSettings readSettings);
+
+        /// <summary>
+        /// Read single image frame.
+        /// </summary>
+        /// <param name="data">The byte array to read the image data from.</param>
+        /// <param name="settings">The pixel storage settings to use when reading the image.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        void ReadPixels(byte[] data, PixelStorageSettings settings);
+
+        /// <summary>
+        /// Read single image frame.
+        /// </summary>
+        /// <param name="file">The file to read the image from.</param>
+        /// <param name="settings">The pixel storage settings to use when reading the image.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        void ReadPixels(FileInfo file, PixelStorageSettings settings);
+
+        /// <summary>
+        /// Read single image frame.
+        /// </summary>
+        /// <param name="stream">The stream to read the image data from.</param>
+        /// <param name="settings">The pixel storage settings to use when reading the image.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        void ReadPixels(Stream stream, PixelStorageSettings settings);
+
+        /// <summary>
+        /// Read single image frame.
+        /// </summary>
+        /// <param name="fileName">The fully qualified name of the image file, or the relative image file name.</param>
+        /// <param name="settings">The pixel storage settings to use when reading the image.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        void ReadPixels(string fileName, PixelStorageSettings settings);
 
         /// <summary>
         /// Reduce noise in image using a noise peak elimination filter.
@@ -2894,6 +2947,18 @@ namespace ImageMagick
         void RemoveProfile(string name);
 
         /// <summary>
+        /// Removes the associated read mask of the image.
+        /// </summary>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        void RemoveReadMask();
+
+        /// <summary>
+        /// Removes the associated write mask of the image.
+        /// </summary>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        void RemoveWriteMask();
+
+        /// <summary>
         /// Resets the page property of this image.
         /// </summary>
         /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
@@ -2916,6 +2981,9 @@ namespace ImageMagick
 
         /// <summary>
         /// Resize image to specified size.
+        /// <para />
+        /// Resize will fit the image into the requested size. It does NOT fill, the requested box size.
+        /// Use the <see cref="MagickGeometry"/> overload for more control over the resulting size.
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
@@ -2976,15 +3044,10 @@ namespace ImageMagick
         void RotationalBlur(double angle, Channels channels);
 
         /// <summary>
-        /// Resize image by using simple ratio algorithm.
-        /// </summary>
-        /// <param name="width">The new width.</param>
-        /// <param name="height">The new height.</param>
-        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
-        void Scale(int width, int height);
-
-        /// <summary>
         /// Resize image by using pixel sampling algorithm.
+        /// <para />
+        /// Resize will fit the image into the requested size. It does NOT fill, the requested box size.
+        /// Use the <see cref="MagickGeometry"/> overload for more control over the resulting size.
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
@@ -3012,6 +3075,17 @@ namespace ImageMagick
         /// <param name="percentageHeight">The percentage of the height.</param>
         /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
         void Sample(Percentage percentageWidth, Percentage percentageHeight);
+
+        /// <summary>
+        /// Resize image by using simple ratio algorithm.
+        /// <para />
+        /// Resize will fit the image into the requested size. It does NOT fill, the requested box size.
+        /// Use the <see cref="MagickGeometry"/> overload for more control over the resulting size.
+        /// </summary>
+        /// <param name="width">The new width.</param>
+        /// <param name="height">The new height.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        void Scale(int width, int height);
 
         /// <summary>
         /// Resize image by using simple ratio algorithm.
@@ -3173,6 +3247,22 @@ namespace ImageMagick
         /// <param name="color">The color.</param>
         /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
         void SetColormap(int index, MagickColor color);
+
+        /// <summary>
+        /// Sets the associated read mask of the image. The mask must be the same dimensions as the image and
+        /// only contain the colors black and white.
+        /// </summary>
+        /// <param name="image">The image that contains the read mask.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        void SetReadMask(IMagickImage image);
+
+        /// <summary>
+        /// Sets the associated write mask of the image. The mask must be the same dimensions as the image and
+        /// only contains the colors black and white.
+        /// </summary>
+        /// <param name="image">The image that contains the write mask.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        void SetWriteMask(IMagickImage image);
 
         /// <summary>
         /// Shade image using distant light source.
@@ -3543,6 +3633,9 @@ namespace ImageMagick
 
         /// <summary>
         /// Resize image to thumbnail size.
+        /// <para />
+        /// Resize will fit the image into the requested size. It does NOT fill, the requested box size.
+        /// Use the <see cref="MagickGeometry"/> overload for more control over the resulting size.
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
@@ -3643,13 +3736,22 @@ namespace ImageMagick
         byte[] ToByteArray(MagickFormat format);
 
         /// <summary>
-        ///  Transforms the image from the colorspace of the source profile to the target profile. The
-        ///  source profile will only be used if the image does not contain a color profile. Nothing
-        ///  will happen if the source profile has a different colorspace then that of the image.
+        /// Transforms the image from the colorspace of the source profile to the target profile. This
+        /// requires the image to have a color profile. Nothing will happen if the image has no color profile.
+        /// </summary>
+        /// <param name="target">The target color profile</param>
+        /// <returns>True when the colorspace was transformed otherwise false.</returns>
+        bool TransformColorSpace(ColorProfile target);
+
+        /// <summary>
+        /// Transforms the image from the colorspace of the source profile to the target profile. The
+        /// source profile will only be used if the image does not contain a color profile. Nothing
+        /// will happen if the source profile has a different colorspace then that of the image.
         /// </summary>
         /// <param name="source">The source color profile.</param>
         /// <param name="target">The target color profile</param>
-        void TransformColorSpace(ColorProfile source, ColorProfile target);
+        /// <returns>True when the colorspace was transformed otherwise false.</returns>
+        bool TransformColorSpace(ColorProfile source, ColorProfile target);
 
         /// <summary>
         /// Add alpha channel to image, setting pixels matching color to transparent.
@@ -3824,6 +3926,14 @@ namespace ImageMagick
         void Write(FileInfo file, IWriteDefines defines);
 
         /// <summary>
+        /// Writes the image to the specified file.
+        /// </summary>
+        /// <param name="file">The file to write the image to.</param>
+        /// <param name="format">The format to use.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        void Write(FileInfo file, MagickFormat format);
+
+        /// <summary>
         /// Writes the image to the specified stream.
         /// </summary>
         /// <param name="stream">The stream to write the image data to.</param>
@@ -3860,5 +3970,13 @@ namespace ImageMagick
         /// <param name="defines">The defines to set.</param>
         /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
         void Write(string fileName, IWriteDefines defines);
+
+        /// <summary>
+        /// Writes the image to the specified file name.
+        /// </summary>
+        /// <param name="fileName">The fully qualified name of the image file, or the relative image file name.</param>
+        /// <param name="format">The format to use.</param>
+        /// <exception cref="MagickException">Thrown when an error is raised by ImageMagick.</exception>
+        void Write(string fileName, MagickFormat format);
     }
 }

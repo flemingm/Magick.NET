@@ -13,21 +13,11 @@
 using ImageMagick;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Magick.NET.Tests
+namespace Magick.NET.Tests.Colors
 {
     [TestClass]
-    public class ColorCMYKTests : ColorBaseTests<ColorCMYK>
+    public partial class ColorCMYKTests : ColorBaseTests<ColorCMYK>
     {
-        [TestMethod]
-        public void Test_GetHashCode()
-        {
-            ColorCMYK first = new ColorCMYK(0, 0, 0, 0);
-            int hashCode = first.GetHashCode();
-
-            first.C = Quantum.Max;
-            Assert.AreNotEqual(hashCode, first.GetHashCode());
-        }
-
         [TestMethod]
         public void Test_IComparable()
         {

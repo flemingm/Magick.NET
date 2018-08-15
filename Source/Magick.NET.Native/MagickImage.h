@@ -126,9 +126,6 @@ MAGICK_NET_EXPORT void MagickImage_Page_Set(Image *, const RectangleInfo *);
 MAGICK_NET_EXPORT size_t MagickImage_Quality_Get(const Image *);
 MAGICK_NET_EXPORT void MagickImage_Quality_Set(Image *, const size_t);
 
-MAGICK_NET_EXPORT Image *MagickImage_ReadMask_Get(const Image *, ExceptionInfo **);
-MAGICK_NET_EXPORT void MagickImage_ReadMask_Set(Image *, const Image *, ExceptionInfo **);
-
 MAGICK_NET_EXPORT size_t MagickImage_ResolutionUnits_Get(const Image *);
 MAGICK_NET_EXPORT void MagickImage_ResolutionUnits_Set(Image *, const  size_t);
 
@@ -152,7 +149,7 @@ MAGICK_NET_EXPORT void MagickImage_WriteMask_Set(Image *, const Image *, Excepti
 
 MAGICK_NET_EXPORT Image *MagickImage_AdaptiveBlur(const Image *, const double, const double, ExceptionInfo **);
 
-MAGICK_NET_EXPORT Image *MagickImage_AdaptiveResize(const Image *, const size_t, const size_t, ExceptionInfo **);
+MAGICK_NET_EXPORT Image *MagickImage_AdaptiveResize(const Image *, const char *, ExceptionInfo **);
 
 MAGICK_NET_EXPORT Image *MagickImage_AdaptiveSharpen(Image *, const double, const double, const size_t, ExceptionInfo **);
 
@@ -234,6 +231,8 @@ MAGICK_NET_EXPORT void MagickImage_CopyPixels(Image *, const Image *, const Rect
 
 MAGICK_NET_EXPORT Image *MagickImage_Crop(const Image *, const RectangleInfo *, ExceptionInfo **);
 
+MAGICK_NET_EXPORT Image *MagickImage_CropAspectRatio(Image *, const char *, const GravityType, ExceptionInfo **);
+
 MAGICK_NET_EXPORT Image *MagickImage_CropToTiles(const Image *, const char *, ExceptionInfo **);
 
 MAGICK_NET_EXPORT void MagickImage_CycleColormap(Image *, const ssize_t, ExceptionInfo **);
@@ -312,6 +311,10 @@ MAGICK_NET_EXPORT const char *MagickImage_GetNextProfileName(const Image *);
 
 MAGICK_NET_EXPORT const StringInfo *MagickImage_GetProfile(const Image *, const char *);
 
+MAGICK_NET_EXPORT Image *MagickImage_GetReadMask(const Image *, ExceptionInfo **);
+
+MAGICK_NET_EXPORT Image *MagickImage_GetWriteMask(const Image *, ExceptionInfo **);
+
 MAGICK_NET_EXPORT void MagickImage_Grayscale(Image *, const size_t, ExceptionInfo **);
 
 MAGICK_NET_EXPORT void MagickImage_HaldClut(Image *, const Image *, ExceptionInfo **);
@@ -336,7 +339,7 @@ MAGICK_NET_EXPORT void MagickImage_LinearStretch(Image *, const double, const do
 
 MAGICK_NET_EXPORT Image *MagickImage_LiquidRescale(const Image *, const char *, ExceptionInfo **);
 
-MAGICK_NET_EXPORT Image *MagickImage_LocalContrast(const Image *, const double, const double, ExceptionInfo **);
+MAGICK_NET_EXPORT Image *MagickImage_LocalContrast(Image *, const double, const double, const size_t, ExceptionInfo **);
 
 MAGICK_NET_EXPORT Image *MagickImage_Magnify(const Image *, ExceptionInfo **);
 
@@ -437,6 +440,10 @@ MAGICK_NET_EXPORT MagickBooleanType MagickImage_SetColorMetric(Image *, const Im
 MAGICK_NET_EXPORT void MagickImage_SetNext(Image *, Image *);
 
 MAGICK_NET_EXPORT void MagickImage_SetProgressDelegate(Image *, const MagickProgressMonitor);
+
+MAGICK_NET_EXPORT void MagickImage_SetReadMask(Image *, const Image *, ExceptionInfo **);
+
+MAGICK_NET_EXPORT void MagickImage_SetWriteMask(Image *, const Image *, ExceptionInfo **);
 
 MAGICK_NET_EXPORT Image *MagickImage_Shade(Image *, const double, const double, const MagickBooleanType, const size_t, ExceptionInfo **);
 

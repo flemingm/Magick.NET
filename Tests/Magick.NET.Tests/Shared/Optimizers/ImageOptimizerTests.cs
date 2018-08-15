@@ -14,7 +14,7 @@ using System.IO;
 using ImageMagick;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Magick.NET.Tests
+namespace Magick.NET.Tests.Optimizers
 {
     [TestClass]
     public class ImageOptimizerTests : ImageOptimizerTestHelper
@@ -253,12 +253,9 @@ namespace Magick.NET.Tests
         }
 
         [TestMethod]
-        public void IsSupported_FileNameIsInvalid_ThrowsException()
+        public void IsSupported_FileNameIsInvalid_ReturnsFalse()
         {
-            ExceptionAssert.ThrowsArgumentNullException("formatInfo", () =>
-            {
-                Optimizer.IsSupported("invalid");
-            });
+            Assert.IsFalse(Optimizer.IsSupported("invalid"));
         }
 
         [TestMethod]

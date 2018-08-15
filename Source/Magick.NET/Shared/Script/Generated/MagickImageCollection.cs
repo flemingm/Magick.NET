@@ -155,7 +155,11 @@ namespace ImageMagick
                 }
                 case 'f':
                 {
-                    return ExecuteFlatten(collection);
+                    return ExecuteFlatten(element, collection);
+                }
+                case 'p':
+                {
+                    return ExecutePolynomial(element, collection);
                 }
                 case 's':
                 {
@@ -210,7 +214,7 @@ namespace ImageMagick
         }
         private IMagickImage ExecuteMorph(XmlElement element, IMagickImageCollection collection)
         {
-            Int32 frames_ = Variables.GetValue<Int32>(element, "frames");
+            Int32 frames_ = GetValue<Int32>(element, "frames");
             collection.Morph(frames_);
             return null;
         }
@@ -277,7 +281,7 @@ namespace ImageMagick
             Hashtable arguments = new Hashtable();
             foreach (XmlAttribute attribute in element.Attributes)
             {
-                arguments[attribute.Name] = Variables.GetValue<ColorSpace>(attribute);
+                arguments[attribute.Name] = GetValue<ColorSpace>(attribute);
             }
             if (arguments.Count == 0)
                 return collection.Combine();
@@ -288,12 +292,22 @@ namespace ImageMagick
         }
         private IMagickImage ExecuteEvaluate(XmlElement element, IMagickImageCollection collection)
         {
-            EvaluateOperator evaluateOperator_ = Variables.GetValue<EvaluateOperator>(element, "evaluateOperator");
+            EvaluateOperator evaluateOperator_ = GetValue<EvaluateOperator>(element, "evaluateOperator");
             return collection.Evaluate(evaluateOperator_);
         }
-        private static IMagickImage ExecuteFlatten(IMagickImageCollection collection)
+        private IMagickImage ExecuteFlatten(XmlElement element, IMagickImageCollection collection)
         {
-            return collection.Flatten();
+            Hashtable arguments = new Hashtable();
+            foreach (XmlAttribute attribute in element.Attributes)
+            {
+                arguments[attribute.Name] = GetValue<MagickColor>(attribute);
+            }
+            if (arguments.Count == 0)
+                return collection.Flatten();
+            else if (OnlyContains(arguments, "backgroundColor"))
+                return collection.Flatten((MagickColor)arguments["backgroundColor"]);
+            else
+                throw new ArgumentException("Invalid argument combination for 'flatten', allowed combinations are: [] [backgroundColor]");
         }
         private static IMagickImage ExecuteMerge(IMagickImageCollection collection)
         {
@@ -308,14 +322,19 @@ namespace ImageMagick
         {
             return collection.Mosaic();
         }
+        private IMagickImage ExecutePolynomial(XmlElement element, IMagickImageCollection collection)
+        {
+            Double[] terms_ = GetDoubleArray(element["terms"]);
+            return collection.Polynomial(terms_);
+        }
         private IMagickImage ExecuteSmushHorizontal(XmlElement element, IMagickImageCollection collection)
         {
-            Int32 offset_ = Variables.GetValue<Int32>(element, "offset");
+            Int32 offset_ = GetValue<Int32>(element, "offset");
             return collection.SmushHorizontal(offset_);
         }
         private IMagickImage ExecuteSmushVertical(XmlElement element, IMagickImageCollection collection)
         {
-            Int32 offset_ = Variables.GetValue<Int32>(element, "offset");
+            Int32 offset_ = GetValue<Int32>(element, "offset");
             return collection.SmushVertical(offset_);
         }
     }

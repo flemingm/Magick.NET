@@ -82,9 +82,9 @@
 //#define MAGICKCORE_ZERO_CONFIGURATION_SUPPORT
 
 /*
-  Define to use the bzip2 compression library
+  Define to use the CAIRO library
 */
-#define MAGICKCORE_BZLIB_DELEGATE
+#define MAGICKCORE_CAIRO_DELEGATE
 
 /*
   Define to use the OpenEXR library
@@ -113,6 +113,11 @@
 #define MAGICKCORE_HAVE_LCMS2_H
 
 /*
+  Define to use the libheif library
+*/
+#define MAGICKCORE_HEIC_DELEGATE
+
+/*
   Define to use the Raw library
 */
 #define MAGICKCORE_RAW_R_DELEGATE
@@ -121,7 +126,6 @@
   Define to use the RSVG library
 */
 #define MAGICKCORE_RSVG_DELEGATE
-#define MAGICKCORE_CAIRO_DELEGATE
 
 /*
   Define to use the GNOME XML library
